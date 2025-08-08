@@ -24,7 +24,7 @@ classifiers = [
 packages = [{include = "andamios_orm"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
 sqlalchemy = "^2.0.0"
 alembic = "^1.12.0"
 pydantic = "^2.0.0"
