@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Database",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages = [{include = "andamios_orm"}]
+packages = [{include = "andamios_orm", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
@@ -96,6 +96,7 @@ profile = "black"
 multi_line_output = 3
 line_length = 88
 known_first_party = ["andamios_orm"]
+src_paths = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -127,7 +128,7 @@ warn_unreachable = true
 strict_equality = true
 
 [tool.coverage.run]
-source = ["andamios_orm"]
+source = ["src/andamios_orm"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]
