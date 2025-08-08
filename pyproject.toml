@@ -1,0 +1,140 @@
+[tool.poetry]
+name = "andamios-orm"
+version = "0.1.0"
+description = "A Python ORM library for database interactions"
+authors = ["andresclaroavocado <adnres.claro@avocadoblock.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/andresclaroavocado/andamios-orm"
+repository = "https://github.com/andresclaroavocado/andamios-orm"
+keywords = ["orm", "database", "sqlalchemy", "python", "andamios"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+packages = [{include = "andamios_orm"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+sqlalchemy = "^2.0.0"
+alembic = "^1.12.0"
+pydantic = "^2.0.0"
+typing-extensions = "^4.5.0"
+asyncpg = {version = "^0.29.0", optional = true}
+psycopg2-binary = {version = "^2.9.0", optional = true}
+pymongo = {version = "^4.5.0", optional = true}
+redis = {version = "^5.0.0", optional = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+black = "^23.7.0"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
+mypy = "^1.5.0"
+pre-commit = "^3.3.0"
+sphinx = "^7.1.0"
+sphinx-rtd-theme = "^1.3.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.0"
+factory-boy = "^3.3.0"
+faker = "^19.3.0"
+
+[tool.poetry.group.fastapi.dependencies]
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+python-multipart = "^0.0.6"
+
+[tool.poetry.extras]
+postgresql = ["asyncpg", "psycopg2-binary"]
+mongodb = ["pymongo"]
+redis = ["redis"]
+fastapi = ["fastapi", "uvicorn", "python-multipart"]
+all = ["asyncpg", "psycopg2-binary", "pymongo", "redis", "fastapi", "uvicorn", "python-multipart"]
+
+[tool.poetry.scripts]
+andamios-orm = "andamios_orm.scripts.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["andamios_orm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=andamios_orm",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.coverage.run]
+source = ["andamios_orm"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
