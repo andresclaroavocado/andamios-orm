@@ -3,20 +3,22 @@
 [![CI](https://github.com/andamios/andamios-orm/workflows/CI/badge.svg)](https://github.com/andamios/andamios-orm/actions)
 [![codecov](https://codecov.io/gh/andamios/andamios-orm/branch/main/graph/badge.svg)](https://codecov.io/gh/andamios/andamios-orm)
 [![PyPI version](https://badge.fury.io/py/andamios-orm.svg)](https://badge.fury.io/py/andamios-orm)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern, async-first Python ORM library built on DuckDB and SQLAlchemy 2.0+. Designed for high-performance analytical workloads with a focus on Example-Driven Development and 100% test coverage.
+A modern, async-first Python ORM library built on DuckDB 1.1.0+ and SQLAlchemy 2.0.35+. Designed for high-performance analytical workloads with a focus on Example-Driven Development and 100% test coverage.
 
 ## 🚀 Features
 
-- **Async-First**: Built from the ground up for async/await patterns with uvloop
-- **DuckDB Integration**: Optimized for DuckDB's columnar architecture and analytical capabilities
-- **Type Safe**: Full type annotations with mypy strict mode compliance
+- **Async-First**: Built from the ground up for async/await patterns with uvloop 0.20.0+
+- **DuckDB 1.1.0+ Integration**: Optimized for DuckDB's columnar architecture and analytical capabilities
+- **SQLAlchemy 2.0.35+ Foundation**: Built on modern async SQLAlchemy for robust ORM functionality
+- **Type Safe**: Full type annotations with mypy 1.13.0+ strict mode compliance
+- **Pydantic 2.10.0+ Integration**: Advanced data validation and serialization
 - **Example-Driven**: Comprehensive examples that serve as living documentation
 - **Real Database Testing**: 100% test coverage using actual DuckDB instances, no mocks
 - **High Performance**: Optimized for analytical workloads and bulk operations
-- **Modern Python**: Supports Python 3.8+ with compatible dependency versions
+- **Modern Python**: Requires Python 3.13+ with latest stable dependency versions
 
 ## 📋 Quick Start
 
