@@ -104,9 +104,11 @@ Andamios ORM follows a layered architecture optimized for DuckDB:
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+ (optimized for Python 3.12)
 - Poetry for dependency management
 - Git with pre-commit hooks
+- Docker (for test database containers)
+- DuckDB 0.9.0+ (automatically installed with andamios-orm)
 
 ### Setup
 

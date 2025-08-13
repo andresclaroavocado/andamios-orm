@@ -1,6 +1,6 @@
 # Andamios ORM
 
-A Python ORM library for database interactions, designed to be part of the broader Andamios ecosystem alongside andamios-llm, andamios-api, and other related libraries.
+A modern, async-first Python ORM library built specifically for DuckDB. Designed for high-performance analytical workloads as part of the broader Andamios ecosystem.
 
 ## 🚀 Features
 
@@ -8,8 +8,7 @@ A Python ORM library for database interactions, designed to be part of the broad
 - **Async Support**: Full async/await support for modern Python applications
 - **Repository Pattern**: Clean repository pattern implementation for data access
 - **Migration Support**: Alembic integration for database schema migrations
-- **Multiple Database Support**: PostgreSQL, MongoDB, Redis, and more
-- **FastAPI Integration**: Optional FastAPI integration for web applications
+- **DuckDB Optimized**: Built specifically for DuckDB's columnar architecture
 - **Type Safety**: Full type hints and mypy support
 - **Extensible**: Designed to work seamlessly with other Andamios libraries
 
@@ -18,20 +17,8 @@ A Python ORM library for database interactions, designed to be part of the broad
 Using Poetry (recommended):
 
 ```bash
-# Basic installation
+# Basic installation includes all core DuckDB features
 poetry add andamios-orm
-
-# With PostgreSQL support
-poetry add andamios-orm[postgresql]
-
-# With MongoDB support
-poetry add andamios-orm[mongodb]
-
-# With FastAPI integration
-poetry add andamios-orm[fastapi]
-
-# With all optional dependencies
-poetry add andamios-orm[all]
 ```
 
 Using pip:
@@ -161,7 +148,7 @@ poetry run mypy andamios_orm
   - [ ] Connection pooling
   
 - [ ] **Phase 3**: Integration & Ecosystem
-  - [ ] FastAPI integration
+  - [ ] Advanced DuckDB features
   - [ ] Andamios ecosystem integration
   - [ ] Performance optimizations
 

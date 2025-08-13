@@ -15,10 +15,12 @@ We follow a strict **Example-Driven Development (EDD) → Test-Driven Developmen
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+ (optimized for Python 3.12)
 - Poetry for dependency management
 - Git
-- Docker (optional, for containerized development)
+- Docker (required for test database containers)
+- DuckDB 0.9.0+ (automatically installed with andamios-orm)
+- uvloop 0.19.0+ (for high-performance async operations)
 
 ### Setup Development Environment
 

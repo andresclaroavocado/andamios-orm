@@ -176,10 +176,10 @@ Examples → Tests → Implementation → Optimization
 
 ## Future Considerations
 
-### Multi-Database Support
-- PostgreSQL adapter
-- SQLite adapter
-- MongoDB adapter (future)
+### DuckDB Extensions
+- Custom DuckDB extensions for specialized operations
+- Advanced columnar operations and optimizations
+- Vector operations and analytics functions
 
 ### Caching Layer
 - Query result caching

@@ -88,9 +88,7 @@ andamios-orm/
 │   └── examples/               # Example documentation
 ├── benchmarks/                 # Performance benchmarks
 └── docker/                     # Docker configurations for testing
-    ├── postgres/               # PostgreSQL test setup
-    ├── mysql/                  # MySQL test setup
-    └── mongodb/                # MongoDB test setup
+    └── duckdb/                 # DuckDB test setup
 ```
 
 ## Development Workflow
@@ -120,7 +118,7 @@ andamios-orm/
 - Docker containers for consistent test databases
 - Separate database per test worker for parallel execution
 - Automatic setup/teardown of test schemas
-- Support for PostgreSQL, MySQL, SQLite, and MongoDB
+- Optimized specifically for DuckDB's columnar architecture
 
 ### Test Categories
 1. **Unit Tests**: Test individual components in isolation
@@ -176,11 +174,9 @@ andamios-orm/
 
 ### Andamios Ecosystem
 - `andamios-llm`: Database operations for LLM data
-- `andamios-api`: FastAPI integration
 - `andamios-core`: Shared utilities and patterns
 
 ### External Integrations
-- FastAPI dependency injection
 - Pydantic model integration
 - Alembic migration support
 - Docker development environment
