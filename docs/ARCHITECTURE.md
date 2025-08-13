@@ -118,9 +118,9 @@ if not asyncio._get_running_loop():
 graph TD
     A[Application] --> B[ConnectionManager]
     B --> C[Connection Pool]
-    C --> D[AsyncPG Pool]
-    C --> E[MySQL Pool]
-    C --> F[SQLite Pool]
+    C --> D[DuckDB Pool]
+    C --> E[SQLite Pool]
+    C --> F[Other DB Pool]
     
     B --> G[Health Monitor]
     G --> H[Connection Validation]

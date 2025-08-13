@@ -1,0 +1,230 @@
+# Pre-commit hooks configuration for Andamios ORM
+# Install with: pre-commit install
+# Run on all files: pre-commit run --all-files
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # MyPy - Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          sqlalchemy[asyncio]==2.0.23,
+          duckdb==0.9.0,
+          uvloop==0.19.0,
+          pydantic==2.5.0,
+          pytest==7.4.3,
+          pytest-asyncio==0.21.1,
+        ]
+        args: [--strict]
+
+  # Built-in hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: name-tests-test
+        args: [--pytest-test-first]
+      - id: requirements-txt-fixer
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: fix-byte-order-marker
+
+  # Security - Bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+
+  # Dependency security - Safety
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+        args: [--disable-optional-telemetry]
+
+  # Python docstring formatting
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        args: [--in-place, --wrap-summaries=88, --wrap-descriptions=88]
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types: [yaml]
+        exclude: ^(\.github/workflows/|docker-compose\.yml)
+
+  # Markdown formatting and linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+
+  # Git commit message formatting
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # Python import sorting (backup to ruff)
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile, black, --filter-files]
+
+  # Remove unused imports and variables
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --remove-unused-variables
+          - --remove-duplicate-keys
+          - --ignore-init-module-imports
+
+  # Python upgrade syntax
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args: [--py311-plus]
+
+  # Local hooks for project-specific checks
+  - repo: local
+    hooks:
+      # Check that examples are executable
+      - id: check-examples-executable
+        name: Check examples are executable
+        entry: python
+        language: system
+        args: [-c, "import sys, os; sys.exit(0 if all(os.access(f, os.X_OK) for f in sys.argv[1:]) else 1)"]
+        files: ^examples/.*\.py$
+
+      # Verify test coverage requirements
+      - id: verify-test-structure
+        name: Verify test structure follows conventions
+        entry: python
+        language: system
+        args: [-c, "
+          import sys, os;
+          test_files = [f for f in sys.argv[1:] if f.startswith('tests/')];
+          missing_conftest = not os.path.exists('tests/conftest.py');
+          sys.exit(1 if missing_conftest else 0)
+        "]
+        files: ^tests/.*\.py$
+
+      # Check that CLAUDE.md is up to date
+      - id: check-claude-md
+        name: Check CLAUDE.md exists and has required sections
+        entry: python
+        language: system
+        args: [-c, "
+          import sys;
+          try:
+              with open('CLAUDE.md', 'r') as f:
+                  content = f.read();
+              required = ['Example-Driven Development', 'Test-Driven Development', '100% test coverage'];
+              missing = [req for req in required if req not in content];
+              sys.exit(1 if missing else 0)
+          except FileNotFoundError:
+              sys.exit(1)
+        "]
+        files: ^CLAUDE\.md$
+        pass_filenames: false
+
+      # Ensure pyproject.toml has required dependencies
+      - id: check-dependencies
+        name: Check required dependencies in pyproject.toml
+        entry: python
+        language: system
+        args: [-c, "
+          import sys, tomllib;
+          try:
+              with open('pyproject.toml', 'rb') as f:
+                  data = tomllib.load(f);
+              deps = data['tool']['poetry']['dependencies'];
+              required = ['sqlalchemy', 'duckdb', 'uvloop', 'pydantic'];
+              missing = [req for req in required if req not in deps];
+              sys.exit(1 if missing else 0)
+          except Exception:
+              sys.exit(1)
+        "]
+        files: ^pyproject\.toml$
+        pass_filenames: false
+
+# Global configuration
+ci:
+  autofix_prs: true
+  autofix_commit_msg: "🔧 Auto-fix from pre-commit.ci"
+  autoupdate_branch: "main"
+  autoupdate_commit_msg: "⬆️ Pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  skip: [
+    # Skip expensive checks in CI
+    python-safety-dependencies-check,
+    mypy,
+  ]
+
+# Exclude patterns
+exclude: |
+  (?x)^(
+    \.git/|
+    \.mypy_cache/|
+    \.pytest_cache/|
+    \.ruff_cache/|
+    __pycache__/|
+    build/|
+    dist/|
+    \.venv/|
+    venv/|
+    node_modules/|
+    \.tox/|
+    htmlcov/|
+    \.coverage|
+    coverage\.xml|
+    \.DS_Store
+  )

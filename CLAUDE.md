@@ -138,7 +138,7 @@ andamios-orm/
 
 ### Core Dependencies
 - `sqlalchemy>=2.0.23` - Core ORM functionality
-- `asyncpg>=0.29.0` - PostgreSQL async driver
+- `duckdb>=0.9.0` - DuckDB async driver (primary database)
 - `uvloop>=0.19.0` - High-performance event loop
 - `pydantic>=2.5.0` - Data validation
 - `alembic>=1.13.0` - Database migrations

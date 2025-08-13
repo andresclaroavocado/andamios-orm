@@ -1,102 +1,199 @@
-# Project Architect DB
+# Andamios ORM
 
+[![CI](https://github.com/andamios/andamios-orm/workflows/CI/badge.svg)](https://github.com/andamios/andamios-orm/actions)
+[![codecov](https://codecov.io/gh/andamios/andamios-orm/branch/main/graph/badge.svg)](https://codecov.io/gh/andamios/andamios-orm)
+[![PyPI version](https://badge.fury.io/py/andamios-orm.svg)](https://badge.fury.io/py/andamios-orm)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![DuckDB](https://img.shields.io/badge/database-DuckDB-orange.svg)](https://duckdb.org/)
-[![Async](https://img.shields.io/badge/async-uvloop-green.svg)](https://github.com/MagicStack/uvloop)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Modern, async-first Python database library for project management and architecture systems. Built specifically for the Web-Based Project Architect platform using DuckDB for high-performance analytical queries.
+A modern, async-first Python ORM library built on DuckDB and SQLAlchemy 2.0+. Designed for high-performance analytical workloads with a focus on Example-Driven Development and 100% test coverage.
 
 ## 🚀 Features
 
-- **Async-First**: Built on uvloop for maximum performance
-- **DuckDB Optimized**: Leverages analytical capabilities for complex queries
-- **Type-Safe**: Full SQLAlchemy 2.0+ and Pydantic v2 integration
-- **100% Test Coverage**: Real database testing, no mocks
-- **Parallel Testing**: Isolated databases per test worker
-- **Example-Driven**: Comprehensive examples for all features
-- **Production-Ready**: CI/CD, monitoring, and security built-in
+- **Async-First**: Built from the ground up for async/await patterns with uvloop
+- **DuckDB Integration**: Optimized for DuckDB's columnar architecture and analytical capabilities
+- **Type Safe**: Full type annotations with mypy strict mode compliance
+- **Example-Driven**: Comprehensive examples that serve as living documentation
+- **Real Database Testing**: 100% test coverage using actual DuckDB instances, no mocks
+- **High Performance**: Optimized for analytical workloads and bulk operations
+- **Modern Python**: Requires Python 3.11+ with latest dependency versions
+
+## 📋 Quick Start
+
+### Installation
+
+```bash
+pip install andamios-orm
+# or with poetry
+poetry add andamios-orm
+```
+
+### Basic Usage
+
+```python
+import asyncio
+import uvloop
+from andamios_orm import create_engine, sessionmaker, Base, Column, Integer, String
+
+# Define a model
+class User(Base):
+    __tablename__ = "users"
+    
+    id: int = Column(Integer, primary_key=True)
+    name: str = Column(String(100), nullable=False)
+    email: str = Column(String(255), unique=True)
+
+async def main():
+    # Create engine and session
+    engine = create_engine("duckdb:///example.db")
+    SessionLocal = sessionmaker(engine)
+    
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Use the ORM
+    async with SessionLocal() as session:
+        user = User(name="Alice", email="alice@example.com")
+        session.add(user)
+        await session.commit()
+        
+        # Query users
+        result = await session.execute(select(User))
+        users = result.scalars().all()
+        print(f"Found {len(users)} users")
+
+# Run with uvloop for best performance
+uvloop.run(main())
+```
 
 ## 🏗️ Architecture
 
-### Core Models
-- **Project**: Software project management with architecture tracking
-- **Conversation**: Multi-phase conversation and workflow management  
-- **Document**: Document and specification management
-- **Repository**: Code repository tracking and analytics
+Andamios ORM follows a layered architecture optimized for DuckDB:
 
-### Repository Pattern
-- Generic base repository with async CRUD operations
-- Specialized repositories with domain-specific logic
-- Advanced query builder with DuckDB optimization
-- Cross-entity analytics and reporting
+- **Core Layer**: Engine, session, and connection management
+- **Models Layer**: Base models, field types, and validation
+- **Repository Layer**: Data access patterns and transaction management
+- **Query Layer**: Fluent query building and optimization
+- **Migration Layer**: Schema evolution and version control
 
-## 📋 Development Status
+## 📚 Documentation
 
-This project follows **Example-Driven Development** followed by **Test-Driven Development**. 
+- **[Getting Started Guide](docs/guides/getting-started.md)** - Learn the basics
+- **[Examples](examples/)** - Practical, executable examples
+- **[API Reference](docs/api/)** - Complete API documentation
+- **[Architecture](ARCHITECTURE.md)** - System design and technical decisions
 
-### Development Phases
+## 🧪 Development Philosophy
 
-- [ ] **Phase 1**: Core Foundation (Setup, Engine, Models)
-- [ ] **Phase 2**: Repository Pattern (Base & Specialized Repos, Query Builder)
-- [ ] **Phase 3**: Analytics (Advanced Analytics, CLI Tools)
-- [ ] **Phase 4**: Testing (100% Coverage, Performance Benchmarks)
-- [ ] **Phase 5**: Integration (Examples, FastAPI, Real-time)
-- [ ] **Phase 6**: Release (Documentation, CI/CD, Security)
+### Example-Driven Development (EDD) → Test-Driven Development (TDD)
 
-See [GITHUB_ISSUES.md](GITHUB_ISSUES.md) for detailed development roadmap with 16 comprehensive issues.
+1. **Phase 1 - Examples**: Create practical, executable examples
+2. **Phase 2 - Tests**: Write comprehensive tests based on examples
+3. **Phase 3 - Implementation**: Implement functionality to pass tests
+4. **Phase 4 - Optimization**: Optimize performance and update docs
 
-## 📖 Documentation
+### Real Database Testing
 
-- [**CLAUDE.md**](CLAUDE.md) - Complete project specifications and requirements
-- [**ARCHITECTURE.md**](ARCHITECTURE.md) - Detailed technical architecture
-- [**TEST_CONFIGURATION.md**](TEST_CONFIGURATION.md) - Testing strategy and setup
-- [**EXAMPLES_STRUCTURE.md**](EXAMPLES_STRUCTURE.md) - Example-driven development framework
-- [**GITHUB_ISSUES.md**](GITHUB_ISSUES.md) - Development roadmap and issues
+- All tests use actual DuckDB instances
+- No mocking of database operations
+- Parallel test execution with isolated databases
+- 100% test coverage requirement
 
-## 🛠️ Quick Start (Coming Soon)
+## 🔧 Development Setup
 
-```python
-# Example usage (implementation coming in Phase 1-2)
-from project_architect_db import DatabaseEngine, ProjectRepository
-from project_architect_db.schemas import ProjectCreate
+### Prerequisites
 
-async def main():
-    engine = DatabaseEngine("duckdb:///projects.db")
-    
-    async with engine.session() as session:
-        async with ProjectRepository(session) as repo:
-            project = await repo.create(ProjectCreate(
-                name="My Project",
-                description="A cool project",
-                project_idea="Build something awesome"
-            ))
-            
-            print(f"Created project: {project.name}")
+- Python 3.11+
+- Poetry for dependency management
+- Git with pre-commit hooks
 
-# More examples coming in examples/ directory
-```
-
-## 🧪 Testing (Coming Soon)
+### Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/andamios/andamios-orm.git
+cd andamios-orm
+
 # Install dependencies
 poetry install
 
-# Run tests in parallel with real DuckDB
-poetry run pytest -n auto --cov=src/project_architect_db
+# Set up pre-commit hooks
+poetry run pre-commit install
 
-# Run performance benchmarks
-poetry run pytest tests/performance/ --benchmark-only
+# Run tests
+poetry run pytest
+
+# Run examples
+cd examples/basic
+python 01_connection.py
 ```
+
+### Development Commands
+
+```bash
+# Testing
+poetry run pytest                    # Run all tests
+poetry run pytest -n auto          # Run tests in parallel
+poetry run pytest --cov-report=html # Generate coverage report
+
+# Code quality
+poetry run mypy src/                # Type checking
+poetry run ruff check src/          # Linting
+poetry run ruff format src/         # Formatting
+poetry run pre-commit run --all-files # All quality checks
+
+# Performance
+poetry run pytest -m performance    # Run performance tests
+```
+
+## 📊 Performance Targets
+
+- **Simple queries**: < 1ms
+- **Complex queries**: < 10ms
+- **Bulk operations**: < 100ms for 10,000 records
+- **Connection acquisition**: < 5ms
+- **Memory usage**: < 100MB base footprint
 
 ## 🤝 Contributing
 
-1. Check out the [development issues](https://github.com/YOUR_USERNAME/project-architect-db/issues)
-2. Start with Phase 1 issues for core foundation
-3. Follow example-driven → test-driven development
-4. Ensure 100% test coverage with real databases
-5. Meet performance benchmarks
+We follow a structured development process:
+
+1. **Start with examples** - Create practical usage examples
+2. **Write tests** - Comprehensive tests based on examples
+3. **Implement** - Make tests pass with clean code
+4. **Document** - Update docs and guides
+
+See our [Contributing Guide](CONTRIBUTING.md) for detailed information.
+
+### Issue Types
+
+- 🌟 **Examples** - Create new usage examples
+- 🧪 **Tests** - Write tests for functionality
+- ⚙️ **Implementation** - Implement core features
+- 🔧 **Optimization** - Performance improvements
+- 📚 **Documentation** - Update guides and API docs
+
+## 📈 Project Status
+
+**Current Phase**: Foundation Development
+
+- [x] Project structure and documentation
+- [x] Example framework setup
+- [x] Testing infrastructure with real databases
+- [x] CI/CD pipeline with quality gates
+- [ ] Core engine implementation
+- [ ] Model system implementation
+- [ ] Repository pattern implementation
+- [ ] Query builder implementation
+- [ ] Migration system implementation
+
+## 🔗 Related Projects
+
+- [SQLAlchemy](https://sqlalchemy.org/) - ORM foundation
+- [DuckDB](https://duckdb.org/) - Analytical database engine
+- [uvloop](https://github.com/MagicStack/uvloop) - High-performance event loop
+- [Pydantic](https://pydantic.dev/) - Data validation
 
 ## 📄 License
 
@@ -104,13 +201,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with [DuckDB](https://duckdb.org/) for analytical performance
-- Powered by [SQLAlchemy 2.0+](https://www.sqlalchemy.org/) for async ORM
-- Enhanced with [Pydantic v2](https://pydantic.dev/) for validation
-- Optimized with [uvloop](https://github.com/MagicStack/uvloop) for async performance
+- SQLAlchemy team for the excellent ORM foundation
+- DuckDB team for the high-performance analytical database
+- Python async community for async/await patterns
+- All contributors who help make this project better
 
 ---
 
-**Status**: 📋 Planning Phase - Ready for Development
-
-See [GITHUB_ISSUES.md](GITHUB_ISSUES.md) for the complete development roadmap.
+**Built with ❤️ by the Andamios Team**
