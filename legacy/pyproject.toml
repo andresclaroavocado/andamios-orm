@@ -18,6 +18,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Database",
@@ -27,42 +30,42 @@ classifiers = [
 packages = [{include = "andamios_orm", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-# Core dependencies - latest versions
-sqlalchemy = "^2.0.23"
+python = "^3.8"
+# Core dependencies - Python 3.8+ compatible versions
+sqlalchemy = "^2.0.0"
 duckdb = "^0.9.0"
-uvloop = "^0.19.0"
-pydantic = "^2.5.0"
-alembic = "^1.13.0"
+uvloop = {version = "^0.19.0", markers = "sys_platform != 'win32'"}
+pydantic = "^2.0.0"
+alembic = "^1.10.0"
 # Async support
-asyncio-mqtt = {version = "^0.16.0", optional = true}
+asyncio-mqtt = {version = "^0.13.0", optional = true}
 # CLI support
-click = "^8.1.7"
-rich = "^13.7.0"
+click = "^8.0.0"
+rich = "^12.0.0"
 
 [tool.poetry.group.dev.dependencies]
 # Testing
-pytest = "^7.4.3"
-pytest-asyncio = "^0.21.1"
-pytest-xdist = "^3.5.0"
-pytest-cov = "^4.1.0"
-pytest-mock = "^3.12.0"
-factory-boy = "^3.3.0"
+pytest = "^7.0.0"
+pytest-asyncio = "^0.20.0"
+pytest-xdist = "^3.0.0"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+factory-boy = "^3.2.0"
 # Code quality
-mypy = "^1.7.0"
-ruff = "^0.1.6"
-black = "^23.11.0"
-isort = "^5.12.0"
-pre-commit = "^3.6.0"
+mypy = "^1.0.0"
+ruff = "^0.1.0"
+black = "^22.0.0"
+isort = "^5.10.0"
+pre-commit = "^3.0.0"
 # Security
 bandit = "^1.7.5"
 safety = "^2.3.5"
 # Documentation
-sphinx = "^7.2.0"
-sphinx-rtd-theme = "^1.3.0"
-myst-parser = "^2.0.0"
+sphinx = "^5.0.0"
+sphinx-rtd-theme = "^1.0.0"
+myst-parser = "^1.0.0"
 # Development tools
-ipython = "^8.17.0"
+ipython = {version = "^8.17.0", python = ">=3.9"}
 ipdb = "^0.13.13"
 
 [tool.poetry.group.performance.dependencies]
@@ -81,7 +84,7 @@ all = ["asyncio-mqtt"]
 # Black configuration
 [tool.black]
 line-length = 88
-target-version = ['py311', 'py312']
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -107,7 +110,7 @@ known_third_party = ["sqlalchemy", "duckdb", "pydantic", "uvloop", "alembic"]
 
 # Ruff configuration
 [tool.ruff]
-target-version = "py311"
+target-version = "py38"
 line-length = 88
 select = [
     "E",  # pycodestyle errors
@@ -141,7 +144,7 @@ max-complexity = 10
 
 # MyPy configuration
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.8"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

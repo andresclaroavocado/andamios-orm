@@ -27,17 +27,17 @@ Andamios ORM is a modern, async-first Python ORM library built on DuckDB and SQL
 ## Technical Requirements
 
 ### Technology Stack
-- **Python**: 3.12+ (latest stable)
-- **Database**: DuckDB 0.9.0+ (primary), SQLAlchemy 2.0+ (ORM layer)
-- **Async**: uvloop 0.19.0+ (high-performance event loop)
-- **Validation**: Pydantic 2.5.0+ (data validation)
-- **Migration**: Alembic 1.13.0+ (database migrations)
+- **Python**: 3.8+ (supports all modern versions)
+- **Database**: DuckDB 0.8.0+ (primary), SQLAlchemy 2.0+ (ORM layer)
+- **Async**: uvloop 0.17.0+ (high-performance event loop)
+- **Validation**: Pydantic 2.0.0+ (data validation)
+- **Migration**: Alembic 1.10.0+ (database migrations)
 
 ### Development Dependencies
-- **Testing**: pytest 7.4.3+, pytest-asyncio 0.21.1+, pytest-xdist 3.5.0+
-- **Coverage**: pytest-cov 4.1.0+
-- **Quality**: mypy 1.7.0+, ruff 0.1.6+, pre-commit 3.6.0+
-- **Factories**: factory-boy 3.3.0+ (test data generation)
+- **Testing**: pytest 7.0.0+, pytest-asyncio 0.20.0+, pytest-xdist 3.0.0+
+- **Coverage**: pytest-cov 4.0.0+
+- **Quality**: mypy 1.0.0+, ruff 0.1.0+, pre-commit 3.0.0+
+- **Factories**: factory-boy 3.2.0+ (test data generation)
 
 ### Performance Requirements
 - Simple queries: < 1ms

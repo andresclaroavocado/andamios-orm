@@ -3,7 +3,7 @@
 [![CI](https://github.com/andamios/andamios-orm/workflows/CI/badge.svg)](https://github.com/andamios/andamios-orm/actions)
 [![codecov](https://codecov.io/gh/andamios/andamios-orm/branch/main/graph/badge.svg)](https://codecov.io/gh/andamios/andamios-orm)
 [![PyPI version](https://badge.fury.io/py/andamios-orm.svg)](https://badge.fury.io/py/andamios-orm)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern, async-first Python ORM library built on DuckDB and SQLAlchemy 2.0+. Designed for high-performance analytical workloads with a focus on Example-Driven Development and 100% test coverage.
@@ -16,7 +16,7 @@ A modern, async-first Python ORM library built on DuckDB and SQLAlchemy 2.0+. De
 - **Example-Driven**: Comprehensive examples that serve as living documentation
 - **Real Database Testing**: 100% test coverage using actual DuckDB instances, no mocks
 - **High Performance**: Optimized for analytical workloads and bulk operations
-- **Modern Python**: Requires Python 3.11+ with latest dependency versions
+- **Modern Python**: Supports Python 3.8+ with compatible dependency versions
 
 ## 📋 Quick Start
 
@@ -104,11 +104,11 @@ Andamios ORM follows a layered architecture optimized for DuckDB:
 
 ### Prerequisites
 
-- Python 3.12+ (optimized for Python 3.12)
+- Python 3.8+ (supports all modern Python versions)
 - Poetry for dependency management
 - Git with pre-commit hooks
 - Docker (for test database containers)
-- DuckDB 0.9.0+ (automatically installed with andamios-orm)
+- DuckDB 0.8.0+ (automatically installed with andamios-orm)
 
 ### Setup
 
