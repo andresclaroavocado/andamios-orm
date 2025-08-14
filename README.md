@@ -1,23 +1,29 @@
 # Andamios ORM
 
-A modern, async-first Python ORM library built specifically for DuckDB. Designed for high-performance analytical workloads as part of the broader Andamios ecosystem.
+A modern, async-first Python ORM library built specifically for DuckDB. Designed for high-performance analytical workloads with uvloop optimization and 100% test coverage.
 
 ## 🚀 Features
 
-- **SQLAlchemy Integration**: Built on top of SQLAlchemy 2.0 for robust database operations
-- **Async Support**: Full async/await support for modern Python applications
-- **Repository Pattern**: Clean repository pattern implementation for data access
-- **Migration Support**: Alembic integration for database schema migrations
-- **DuckDB Optimized**: Built specifically for DuckDB's columnar architecture
-- **Type Safety**: Full type hints and mypy support
-- **Extensible**: Designed to work seamlessly with other Andamios libraries
+- **DuckDB Optimized**: Built specifically for DuckDB 1.1+ columnar architecture
+- **Async + uvloop**: Full async/await support with uvloop for maximum performance
+- **SQLAlchemy 2.0+**: Built on SQLAlchemy 2.0.35+ for modern database operations
+- **Type Safety**: Full type hints with mypy strict mode support
+- **100% Coverage**: Mandatory 100% test coverage with parallel testing
+- **Real Database Testing**: Uses actual DuckDB instances, no mocking
+
+## 📋 Prerequisites
+
+- **Python**: 3.13+
+- **DuckDB**: 1.1.0+
+- **SQLAlchemy**: 2.0.35+
+- **uvloop**: 0.20.0+
+- **Poetry**: Latest version for dependency management
 
 ## 📦 Installation
 
 Using Poetry (recommended):
 
 ```bash
-# Basic installation includes all core DuckDB features
 poetry add andamios-orm
 ```
 
@@ -62,19 +68,42 @@ andamios-orm/
 
 ## 🔧 Quick Start
 
-*Note: Actual implementation coming soon. This is the initial project structure.*
-
 ```python
-# TODO: Add quick start example when implementation is ready
-from andamios_orm import Model, Repository
+import asyncio
+import uvloop
+from andamios_orm import create_memory_engine, sessionmaker, AsyncSession
 
-# Example model definition (placeholder)
-class User(Model):
-    pass
+# Import your models (example using legacy database models)
+from legacy.database.models import Base, Project
 
-# Example repository usage (placeholder)
-class UserRepository(Repository[User]):
-    pass
+async def main():
+    # Create DuckDB engine (optimized with uvloop)
+    engine = create_memory_engine(echo=False)
+    SessionLocal = sessionmaker(engine, class_=AsyncSession)
+    
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Use the ORM
+    async with SessionLocal() as session:
+        # Create object in memory
+        project = Project(
+            name="My Project",
+            project_idea="Build something awesome"
+        )
+        
+        # Save to DuckDB
+        session.add(project)
+        await session.commit()
+        await session.refresh(project)
+        
+        print(f"Project created with ID: {project.id}")
+    
+    await engine.dispose()
+
+if __name__ == "__main__":
+    uvloop.run(main())
 ```
 
 ## 🧪 Development

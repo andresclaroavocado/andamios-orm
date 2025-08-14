@@ -1,13 +1,15 @@
 """
-Andamios ORM - A Python ORM library for database interactions
+Andamios ORM - A modern, async-first Python ORM library built for DuckDB
 
 This is the main package for the Andamios ORM library, providing
-a clean and intuitive interface for database operations.
+a clean and intuitive interface for DuckDB database operations with
+async/await support and uvloop optimization.
 """
+
+from .core import create_engine, create_memory_engine, create_file_engine, sessionmaker, AsyncSession
 
 __version__ = "0.1.0"
 __author__ = "andresclaroavocado"
 __email__ = "adnres.claro@avocadoblock.com"
 
-# Main exports will be added here as the library develops
-__all__ = []
+__all__ = ["create_engine", "create_memory_engine", "create_file_engine", "sessionmaker", "AsyncSession"]

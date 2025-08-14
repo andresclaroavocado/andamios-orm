@@ -1,91 +1,80 @@
-# Andamios ORM Examples
+# Andamios ORM Examples - Ultra-Simple EDD
 
-This directory contains comprehensive examples demonstrating all features of the Andamios ORM library. Examples follow the Example-Driven Development (EDD) approach where clear, practical examples drive the API design and implementation.
+Ultra-simple Example-Driven Development (EDD) examples. Each example demonstrates one CRUD operation using existing models, following the narrative: **instantiate ORM object → create → persisted in DuckDB**.
 
-## Example Categories
+## Examples Structure
 
-### 1. Basic Examples (`basic/`)
-- Simple CRUD operations
-- Basic model definitions
-- Repository pattern usage
-- Database connections
+**4 examples per model × 4 models = 16 total examples**
 
-### 2. Advanced Examples (`advanced/`)
-- Complex relationships
-- Advanced querying
-- Performance optimizations
-- Custom repository implementations
+### CREATE Examples
+- **`create_project.py`** - Project: instantiate → create → persisted
+- **`create_conversation.py`** - Conversation: instantiate → create → persisted  
+- **`create_document.py`** - Document: instantiate → create → persisted
+- **`create_repository.py`** - Repository: instantiate → create → persisted
 
-### 3. Integration Examples (`integration/`)
-- FastAPI integration
-- Pydantic model integration
-- Alembic migrations
-- Testing patterns
+### READ Examples
+- **`read_project.py`** - Project: create → read from DuckDB
+- **`read_conversation.py`** - Conversation: create → read from DuckDB
+- **`read_document.py`** - Document: create → read from DuckDB
+- **`read_repository.py`** - Repository: create → read from DuckDB
 
-### 4. Real-World Examples (`real_world/`)
-- Complete application examples
-- Production patterns
-- Performance considerations
-- Best practices
+### UPDATE Examples
+- **`update_project.py`** - Project: create → read → update → persisted
+- **`update_conversation.py`** - Conversation: create → read → update → persisted
+- **`update_document.py`** - Document: create → read → update → persisted
+- **`update_repository.py`** - Repository: create → read → update → persisted
+
+### DELETE Examples
+- **`delete_project.py`** - Project: create → read → delete → removed
+- **`delete_conversation.py`** - Conversation: create → read → delete → removed
+- **`delete_document.py`** - Document: create → read → delete → removed
+- **`delete_repository.py`** - Repository: create → read → delete → removed
 
 ## Running Examples
 
-Each example is self-contained and can be run independently:
-
 ```bash
-# Setup virtual environment
-poetry install
-
-# Start test database
-docker-compose -f docker/test-databases.yml up -d
-
-# Run a specific example
-cd examples/basic
-python user_crud.py
+# Run any specific example
+python examples/basic/create_project.py
+python examples/basic/read_conversation.py
+python examples/basic/update_document.py
+python examples/basic/delete_repository.py
 
 # Run all examples
-python -m examples.run_all
+python examples/run_examples.py
 ```
 
-## Example Structure
+## Example Pattern
 
-Each example follows this structure:
+Each example follows this ultra-simple pattern:
 
 ```python
 """
-Example: [Title]
+[OPERATION] [Model] Example
 
-Description: [What this example demonstrates]
-
-Key Concepts:
-- [Concept 1]
-- [Concept 2]
-- [Concept 3]
-
-Prerequisites:
-- [Requirement 1]
-- [Requirement 2]
+Narrative: [specific flow for this operation]
 """
 
-# 1. Setup and imports
-# 2. Model definitions (if needed)
-# 3. Repository setup
-# 4. Example operations
-# 5. Cleanup
+import asyncio
+import uvloop
+from andamios_orm import create_memory_engine, sessionmaker, AsyncSession
+
+# Import existing models (no model definitions here)
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
+from database.models import Base, [Model]
+
+async def main():
+    # [Operation implementation following the narrative]
+    pass
 
 if __name__ == "__main__":
-    # Run the example
-    asyncio.run(main())
+    uvloop.run(main())
 ```
 
-## Contributing Examples
+## EDD Principles
 
-When adding new examples:
-
-1. **Start with the use case**: What problem does this solve?
-2. **Keep it focused**: One example, one concept
-3. **Make it executable**: Example should run without modification
-4. **Add comprehensive comments**: Explain what and why
-5. **Include error handling**: Show proper exception handling
-6. **Demonstrate best practices**: Use optimal patterns
-7. **Add to the test suite**: Each example should have tests
+- **Ultra-Simple**: One operation per example
+- **No Model Definitions**: Uses existing models only
+- **Clear Narrative**: Each example follows exact story
+- **Real DuckDB**: No mocks, actual database operations
+- **Async + uvloop**: Modern async patterns
