@@ -27,6 +27,7 @@ async def init_db():
 class Repository(Model):
     __tablename__ = "repositories"
     
+    id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)

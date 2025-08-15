@@ -26,6 +26,7 @@ async def init_db():
 class Conversation(Model):
     __tablename__ = "conversations"
     
+    id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, index=True)
     phase = Column(String(100), default="project_idea")
     messages = Column(JSON, default=list)

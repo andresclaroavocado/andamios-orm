@@ -27,6 +27,7 @@ async def init_db():
 class Project(Model):
     __tablename__ = "projects"
     
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False, index=True)
     description = Column(Text)
     project_idea = Column(Text, nullable=False)

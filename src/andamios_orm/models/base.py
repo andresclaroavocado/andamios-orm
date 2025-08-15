@@ -21,12 +21,9 @@ class Model(Base):
     
     Provides simple methods like save(), delete(), get() that hide
     all SQLAlchemy complexity from the client.
+    Note: Models should define their own id, created_at, updated_at fields to match legacy schema exactly.
     """
     __abstract__ = True
-    
-    id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
     
     @classmethod
     async def create(cls, **kwargs: Any) -> "Model":

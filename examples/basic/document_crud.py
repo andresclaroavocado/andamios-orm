@@ -26,6 +26,7 @@ async def init_db():
 class Document(Model):
     __tablename__ = "documents"
     
+    id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, index=True)
     name = Column(String(255), nullable=False)
     content = Column(Text)
