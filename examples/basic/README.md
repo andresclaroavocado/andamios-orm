@@ -1,6 +1,6 @@
 # Basic Examples
 
-Simple CRUD examples following Grok's pattern but with real ORM functionality.
+Simple CRUD examples with clean factory pattern and real ORM functionality.
 
 ## Examples
 
@@ -9,7 +9,7 @@ Simple CRUD examples following Grok's pattern but with real ORM functionality.
 python project_crud.py
 ```
 
-SQLAlchemy model with Grok's simple pattern:
+SQLAlchemy model with clean factory pattern:
 ```python
 class Project(Base):
     __tablename__ = "projects"
@@ -48,18 +48,18 @@ class Repository(Base):
 repo = Repository.create(id=1, name="MyProject")
 ```
 
-## What's Different from Grok's Example
+## Implementation Details
 
-✅ **Kept Grok's Simple Pattern:**
-- Simple `create()` class method
-- Clean `__repr__` methods
+✅ **Simple Factory Pattern:**
+- Clean `create()` class method
+- Clear `__repr__` methods
 - Basic CRUD operations
-- No over-engineering
+- Minimal complexity
 
-✅ **But Made It Actually Work:**
-- Real SQLAlchemy models with `Base`
+✅ **Real ORM Integration:**
+- SQLAlchemy models with `Base`
 - Actual database table creation
 - Real CRUD operations with DuckDB
 - Proper async/await with sessions
 
-**Result:** Simple examples that follow boss's request but actually work with the ORM!
+**Result:** Simple examples with working ORM functionality!

@@ -1,7 +1,7 @@
 """
 Project CRUD Example
 
-Following Grok's simple pattern but with real ORM functionality.
+Follows a clean factory pattern with real ORM functionality.
 Simple Project class with create() method that actually works with DuckDB.
 """
 
@@ -15,7 +15,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
 from database.database import Base
 
-# Define Project model - like Grok's pattern but with real SQLAlchemy
+# Define Project model with clean factory pattern using SQLAlchemy
 class Project(Base):
     __tablename__ = "projects"
     
@@ -27,7 +27,7 @@ class Project(Base):
 
     @classmethod
     def create(cls, id: int, name: str):
-        """Create a new project - simple factory method like Grok's example"""
+        """Create a new project - simple factory method"""
         return cls(id=id, name=name)
 
 async def main():
