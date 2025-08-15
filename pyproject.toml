@@ -2,7 +2,7 @@
 name = "andamios-orm"
 version = "0.1.0"
 description = "A Python ORM library for database interactions"
-authors = ["andresclaroavocado <adnres.claro@avocadoblock.com>"]
+authors = ["andresclaroavocado <andres.claro@avocadoblock.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/andresclaroavocado/andamios-orm"

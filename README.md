@@ -206,7 +206,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Create an issue on GitHub for bug reports
 - Start a discussion for questions and feature requests
-- Email: adnres.claro@avocadoblock.com
+- Email: andres.claro@avocadoblock.com
 
 ---
 

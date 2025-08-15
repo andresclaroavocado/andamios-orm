@@ -10,6 +10,6 @@ from .core import create_engine, create_memory_engine, create_file_engine, sessi
 
 __version__ = "0.1.0"
 __author__ = "andresclaroavocado"
-__email__ = "adnres.claro@avocadoblock.com"
+__email__ = "andres.claro@avocadoblock.com"
 
 __all__ = ["create_engine", "create_memory_engine", "create_file_engine", "sessionmaker", "AsyncSession"]
