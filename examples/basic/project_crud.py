@@ -1,8 +1,8 @@
 """
-Project CRUD Example
+Project CRUD Example - BEFORE (Complex)
 
-Complete Create, Read, Update, Delete operations for Project model.
-Narrative: instantiate ORM object → create → persisted in DuckDB → read/update/delete
+This shows the OLD complex way vs the NEW simple way.
+Compare this with ultra_simple_crud.py to see the difference!
 """
 
 import asyncio
@@ -15,6 +15,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
 from database.models import Base, Project
 
 async def main():
+    print("🔧 OLD COMPLEX WAY (what we want to avoid)")
+    print("=" * 50)
+    print("❌ Too much setup - client manages everything!")
+    
+    # Complex setup that client shouldn't need to do
     engine = create_memory_engine()
     SessionLocal = sessionmaker(engine, class_=AsyncSession)
     
@@ -22,49 +27,39 @@ async def main():
         await conn.run_sync(Base.metadata.create_all)
     
     async with SessionLocal() as session:
-        print("🚀 Project CRUD Operations")
-        print("=" * 30)
-        
-        # CREATE
-        print("\n📝 CREATE: Instantiate → create → persisted in DuckDB")
+        print("\n📝 CREATE: Complex session management")
         project = Project(
             name="My Web App",
             description="A task management system",
             project_idea="Build a productivity tool",
             status="draft"
         )
-        session.add(project)
-        await session.commit()
-        await session.refresh(project)
-        print(f"✅ Created project ID: {project.id}, Name: {project.name}")
+        session.add(project)  # Client manages session
+        await session.commit()  # Client manages commit
+        await session.refresh(project)  # Client manages refresh
+        print(f"✅ Created project ID: {project.id}")
         
-        # READ
-        print(f"\n📖 READ: Retrieve project from DuckDB")
+        print(f"\n📖 READ: Manual session.get()")
         found_project = await session.get(Project, project.id)
         print(f"✅ Read project: {found_project.name}")
-        print(f"   Description: {found_project.description}")
-        print(f"   Status: {found_project.status}")
         
-        # UPDATE
-        print(f"\n✏️ UPDATE: Modify and persist changes")
+        print(f"\n✏️ UPDATE: Manual commit")
         found_project.name = "Updated Web App"
-        found_project.status = "active"
-        found_project.description = "An advanced task management system"
-        await session.commit()
-        print(f"✅ Updated project: {found_project.name}")
-        print(f"   New status: {found_project.status}")
+        await session.commit()  # Client manages commit again
+        print(f"✅ Updated: {found_project.name}")
         
-        # DELETE
-        print(f"\n🗑️ DELETE: Remove from DuckDB")
-        project_id = found_project.id
+        print(f"\n🗑️ DELETE: Manual session.delete()")
         await session.delete(found_project)
         await session.commit()
+        print("✅ Project deleted")
         
-        # Verify deletion
-        deleted_project = await session.get(Project, project_id)
-        print(f"✅ Project deleted: {deleted_project is None}")
-        
-        print("\n✨ All Project CRUD operations completed!")
+        print("\n❌ Too much boilerplate! Client manages:")
+        print("   - Engine creation")
+        print("   - Session maker")
+        print("   - Session context")
+        print("   - Manual commits")
+        print("   - Table creation")
+        print("\n✨ See ultra_simple_crud.py for the NEW simple way!")
     
     await engine.dispose()
 

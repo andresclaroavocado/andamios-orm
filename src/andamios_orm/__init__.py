@@ -6,10 +6,11 @@ a clean and intuitive interface for DuckDB database operations with
 async/await support and uvloop optimization.
 """
 
-from .core import create_engine, create_memory_engine, create_file_engine, sessionmaker, AsyncSession
+from .core import create_engine, create_memory_engine, create_file_engine, sessionmaker, AsyncSession, get_session, init_db
+from .models.base import Model
 
 __version__ = "0.1.0"
 __author__ = "andresclaroavocado"
 __email__ = "andres.claro@avocadoblock.com"
 
-__all__ = ["create_engine", "create_memory_engine", "create_file_engine", "sessionmaker", "AsyncSession"]
+__all__ = ["create_engine", "create_memory_engine", "create_file_engine", "sessionmaker", "AsyncSession", "get_session", "init_db", "Model"]
