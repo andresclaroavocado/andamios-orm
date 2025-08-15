@@ -7,7 +7,8 @@ Uses async/await but keeps it simple.
 
 import asyncio
 import uvloop
-from sqlalchemy import Column, Integer, String, Text, JSON
+from sqlalchemy import Column, Integer, String, Text, JSON, DateTime
+from sqlalchemy.sql import func
 from andamios_orm.models.base import Model, Base
 from andamios_orm.core import get_session
 
@@ -22,7 +23,7 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# Define Project model exactly like we have
+# Define Project model exactly like legacy database
 class Project(Model):
     __tablename__ = "projects"
     
@@ -31,6 +32,8 @@ class Project(Model):
     project_idea = Column(Text, nullable=False)
     architecture = Column(JSON)
     status = Column(String(50), default="draft")
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     def __repr__(self):
         return f"Project(id={self.id}, name='{self.name}')"

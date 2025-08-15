@@ -7,7 +7,8 @@ Uses async/await but keeps it simple.
 
 import asyncio
 import uvloop
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy.sql import func
 from andamios_orm.models.base import Model, Base
 
 # Initialize database
@@ -21,7 +22,7 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# Define Document model
+# Define Document model exactly like legacy database
 class Document(Model):
     __tablename__ = "documents"
     
@@ -30,6 +31,8 @@ class Document(Model):
     content = Column(Text)
     doc_type = Column(String(100))  # architecture, api_spec, deployment, etc.
     file_path = Column(String(500))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     def __repr__(self):
         return f"Document(id={self.id}, name='{self.name}')"

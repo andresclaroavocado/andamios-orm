@@ -7,7 +7,8 @@ Uses async/await but keeps it simple.
 
 import asyncio
 import uvloop
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy.sql import func
 from andamios_orm.models.base import Model, Base
 from andamios_orm.core import get_session
 
@@ -22,15 +23,17 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# Define Repository model exactly like we have
+# Define Repository model exactly like legacy database
 class Repository(Model):
     __tablename__ = "repositories"
     
     project_id = Column(Integer, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    repo_type = Column(String(100))
+    repo_type = Column(String(100))  # backend, frontend, docs, infrastructure
     github_url = Column(String(500))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
 
     def __repr__(self):
         return f"Repository(id={self.id}, name='{self.name}')"
