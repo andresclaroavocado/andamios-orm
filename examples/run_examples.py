@@ -3,12 +3,12 @@
 Example Runner for Andamios ORM - Ultra-Simple EDD
 
 Description: Run ultra-simple Example-Driven Development examples.
-16 total examples: 4 operations × 4 models
+4 total examples: 1 comprehensive CRUD example per model
 
 Usage:
-    python examples/run_examples.py                    # Run all 16 examples
-    python examples/run_examples.py create_project    # Run specific example
-    python examples/run_examples.py --list            # List all 16 examples
+    python examples/run_examples.py                    # Run all 4 examples
+    python examples/run_examples.py project_crud      # Run specific example
+    python examples/run_examples.py --list            # List all 4 examples
 """
 
 import asyncio
@@ -25,107 +25,31 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-# Ultra-simple EDD examples - 4 operations × 4 models = 16 examples
+# Ultra-simple EDD examples - 1 comprehensive CRUD example per model = 4 examples
 EXAMPLES = {
-    # CREATE Examples
-    "create_project": {
-        "module": "examples.basic.create_project",
+    "project_crud": {
+        "module": "examples.basic.project_crud",
         "function": "main",
-        "description": "CREATE Project: instantiate → create → persisted",
-        "duration": "~10 seconds"
+        "description": "Project CRUD: CREATE → READ → UPDATE → DELETE operations",
+        "duration": "~15 seconds"
     },
-    "create_conversation": {
-        "module": "examples.basic.create_conversation",
+    "conversation_crud": {
+        "module": "examples.basic.conversation_crud",
         "function": "main",
-        "description": "CREATE Conversation: instantiate → create → persisted",
-        "duration": "~10 seconds"
+        "description": "Conversation CRUD: CREATE → READ → UPDATE → DELETE operations",
+        "duration": "~15 seconds"
     },
-    "create_document": {
-        "module": "examples.basic.create_document",
+    "document_crud": {
+        "module": "examples.basic.document_crud",
         "function": "main",
-        "description": "CREATE Document: instantiate → create → persisted",
-        "duration": "~10 seconds"
+        "description": "Document CRUD: CREATE → READ → UPDATE → DELETE operations",
+        "duration": "~15 seconds"
     },
-    "create_repository": {
-        "module": "examples.basic.create_repository",
+    "repository_crud": {
+        "module": "examples.basic.repository_crud",
         "function": "main",
-        "description": "CREATE Repository: instantiate → create → persisted",
-        "duration": "~10 seconds"
-    },
-    # READ Examples
-    "read_project": {
-        "module": "examples.basic.read_project",
-        "function": "main",
-        "description": "READ Project: create → read from DuckDB",
-        "duration": "~10 seconds"
-    },
-    "read_conversation": {
-        "module": "examples.basic.read_conversation",
-        "function": "main",
-        "description": "READ Conversation: create → read from DuckDB",
-        "duration": "~10 seconds"
-    },
-    "read_document": {
-        "module": "examples.basic.read_document",
-        "function": "main",
-        "description": "READ Document: create → read from DuckDB",
-        "duration": "~10 seconds"
-    },
-    "read_repository": {
-        "module": "examples.basic.read_repository",
-        "function": "main",
-        "description": "READ Repository: create → read from DuckDB",
-        "duration": "~10 seconds"
-    },
-    # UPDATE Examples
-    "update_project": {
-        "module": "examples.basic.update_project",
-        "function": "main",
-        "description": "UPDATE Project: create → read → update → persisted",
-        "duration": "~10 seconds"
-    },
-    "update_conversation": {
-        "module": "examples.basic.update_conversation",
-        "function": "main",
-        "description": "UPDATE Conversation: create → read → update → persisted",
-        "duration": "~10 seconds"
-    },
-    "update_document": {
-        "module": "examples.basic.update_document",
-        "function": "main",
-        "description": "UPDATE Document: create → read → update → persisted",
-        "duration": "~10 seconds"
-    },
-    "update_repository": {
-        "module": "examples.basic.update_repository",
-        "function": "main",
-        "description": "UPDATE Repository: create → read → update → persisted",
-        "duration": "~10 seconds"
-    },
-    # DELETE Examples
-    "delete_project": {
-        "module": "examples.basic.delete_project",
-        "function": "main",
-        "description": "DELETE Project: create → read → delete → removed",
-        "duration": "~10 seconds"
-    },
-    "delete_conversation": {
-        "module": "examples.basic.delete_conversation",
-        "function": "main",
-        "description": "DELETE Conversation: create → read → delete → removed",
-        "duration": "~10 seconds"
-    },
-    "delete_document": {
-        "module": "examples.basic.delete_document",
-        "function": "main",
-        "description": "DELETE Document: create → read → delete → removed",
-        "duration": "~10 seconds"
-    },
-    "delete_repository": {
-        "module": "examples.basic.delete_repository",
-        "function": "main",
-        "description": "DELETE Repository: create → read → delete → removed",
-        "duration": "~10 seconds"
+        "description": "Repository CRUD: CREATE → READ → UPDATE → DELETE operations",
+        "duration": "~15 seconds"
     }
 }
 
@@ -233,7 +157,7 @@ async def main():
     
     print("🔧 Andamios ORM - Ultra-Simple EDD Examples Runner")
     print("=" * 60)
-    print("16 examples: 4 operations × 4 models")
+    print("4 examples: 1 comprehensive CRUD example per model")
     
     # Run examples based on arguments
     success = True

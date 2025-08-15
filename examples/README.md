@@ -1,43 +1,25 @@
 # Andamios ORM Examples - Ultra-Simple EDD
 
-Ultra-simple Example-Driven Development (EDD) examples. Each example demonstrates one CRUD operation using existing models, following the narrative: **instantiate ORM object → create → persisted in DuckDB**.
+Ultra-simple Example-Driven Development (EDD) examples. Each example demonstrates complete CRUD operations using existing models, following the narrative: **instantiate ORM object → create → persisted in DuckDB → read/update/delete**.
 
 ## Examples Structure
 
-**4 examples per model × 4 models = 16 total examples**
+**1 comprehensive example per model × 4 models = 4 total examples**
 
-### CREATE Examples
-- **`create_project.py`** - Project: instantiate → create → persisted
-- **`create_conversation.py`** - Conversation: instantiate → create → persisted  
-- **`create_document.py`** - Document: instantiate → create → persisted
-- **`create_repository.py`** - Repository: instantiate → create → persisted
-
-### READ Examples
-- **`read_project.py`** - Project: create → read from DuckDB
-- **`read_conversation.py`** - Conversation: create → read from DuckDB
-- **`read_document.py`** - Document: create → read from DuckDB
-- **`read_repository.py`** - Repository: create → read from DuckDB
-
-### UPDATE Examples
-- **`update_project.py`** - Project: create → read → update → persisted
-- **`update_conversation.py`** - Conversation: create → read → update → persisted
-- **`update_document.py`** - Document: create → read → update → persisted
-- **`update_repository.py`** - Repository: create → read → update → persisted
-
-### DELETE Examples
-- **`delete_project.py`** - Project: create → read → delete → removed
-- **`delete_conversation.py`** - Conversation: create → read → delete → removed
-- **`delete_document.py`** - Document: create → read → delete → removed
-- **`delete_repository.py`** - Repository: create → read → delete → removed
+### Complete CRUD Examples
+- **`project_crud.py`** - Project: Complete CREATE → READ → UPDATE → DELETE operations
+- **`conversation_crud.py`** - Conversation: Complete CREATE → READ → UPDATE → DELETE operations
+- **`document_crud.py`** - Document: Complete CREATE → READ → UPDATE → DELETE operations
+- **`repository_crud.py`** - Repository: Complete CREATE → READ → UPDATE → DELETE operations
 
 ## Running Examples
 
 ```bash
 # Run any specific example
-python examples/basic/create_project.py
-python examples/basic/read_conversation.py
-python examples/basic/update_document.py
-python examples/basic/delete_repository.py
+python examples/basic/project_crud.py
+python examples/basic/conversation_crud.py
+python examples/basic/document_crud.py
+python examples/basic/repository_crud.py
 
 # Run all examples
 python examples/run_examples.py
@@ -45,13 +27,14 @@ python examples/run_examples.py
 
 ## Example Pattern
 
-Each example follows this ultra-simple pattern:
+Each example follows this comprehensive CRUD pattern:
 
 ```python
 """
-[OPERATION] [Model] Example
+[Model] CRUD Example
 
-Narrative: [specific flow for this operation]
+Complete Create, Read, Update, Delete operations for [Model] model.
+Narrative: instantiate ORM object → create → persisted in DuckDB → read/update/delete
 """
 
 import asyncio
@@ -64,7 +47,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
 from database.models import Base, [Model]
 
 async def main():
-    # [Operation implementation following the narrative]
+    # CREATE: instantiate → create → persisted in DuckDB
+    # READ: retrieve object from DuckDB
+    # UPDATE: modify and persist changes
+    # DELETE: remove from DuckDB
     pass
 
 if __name__ == "__main__":
@@ -73,8 +59,8 @@ if __name__ == "__main__":
 
 ## EDD Principles
 
-- **Ultra-Simple**: One operation per example
+- **Comprehensive**: All CRUD operations in one example
 - **No Model Definitions**: Uses existing models only
-- **Clear Narrative**: Each example follows exact story
+- **Clear Narrative**: Each example follows complete story
 - **Real DuckDB**: No mocks, actual database operations
 - **Async + uvloop**: Modern async patterns
