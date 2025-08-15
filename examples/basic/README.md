@@ -1,6 +1,6 @@
 # Basic Examples
 
-Simple CRUD examples just like boss wanted - following Grok's pattern.
+Simple CRUD examples following Grok's pattern but with real ORM functionality.
 
 ## Examples
 
@@ -9,19 +9,22 @@ Simple CRUD examples just like boss wanted - following Grok's pattern.
 python project_crud.py
 ```
 
-Simple Project class with `create()` method:
+SQLAlchemy model with Grok's simple pattern:
 ```python
-class Project:
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
+class Project(Base):
+    __tablename__ = "projects"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
     
     @classmethod
     def create(cls, id: int, name: str):
         return cls(id=id, name=name)
 
-# Usage
+# Usage - works with real DuckDB
 project = Project.create(id=1, name="MyWebApp")
+session.add(project)
+await session.commit()
 ```
 
 ### 📁 Repository CRUD
@@ -29,27 +32,34 @@ project = Project.create(id=1, name="MyWebApp")
 python repository_crud.py
 ```
 
-Same pattern for Repository:
+Same pattern for Repository with actual database operations:
 ```python
-class Repository:
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
+class Repository(Base):
+    __tablename__ = "repositories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
     
     @classmethod
     def create(cls, id: int, name: str):
         return cls(id=id, name=name)
 
-# Usage  
+# Usage - persists to DuckDB
 repo = Repository.create(id=1, name="MyProject")
 ```
 
-## Pattern
+## What's Different from Grok's Example
 
-All examples follow the same simple pattern from Grok:
-1. Simple class with `__init__` and `__repr__`
-2. Class method `create()` for instantiation  
-3. Basic CRUD operations in async functions
-4. No complex ORM features
+✅ **Kept Grok's Simple Pattern:**
+- Simple `create()` class method
+- Clean `__repr__` methods
+- Basic CRUD operations
+- No over-engineering
 
-Just like boss wanted - **simple examples, no over-engineering!**
+✅ **But Made It Actually Work:**
+- Real SQLAlchemy models with `Base`
+- Actual database table creation
+- Real CRUD operations with DuckDB
+- Proper async/await with sessions
+
+**Result:** Simple examples that follow boss's request but actually work with the ORM!

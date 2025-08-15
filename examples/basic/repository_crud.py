@@ -1,26 +1,33 @@
 """
-Repository CRUD Example - Simple as Boss Wanted
+Repository CRUD Example
 
-Just like Grok's example: simple class with create() method.
-No fancy ORM stuff, just basic operations.
+Following Grok's simple pattern but with real ORM functionality.
+Simple Repository class with create() method that actually works with DuckDB.
 """
 
 import asyncio
 import uvloop
+from sqlalchemy import Column, Integer, String, Text
 from andamios_orm import create_memory_engine, sessionmaker, AsyncSession
 
-# Define a simple Repository model - like Grok's example
-class Repository:
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
+# Import the base for SQLAlchemy models
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
+from database.database import Base
+
+# Define Repository model - like Grok's pattern but with real SQLAlchemy
+class Repository(Base):
+    __tablename__ = "repositories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
 
     def __repr__(self):
         return f"Repository(id={self.id}, name='{self.name}')"
 
     @classmethod
     def create(cls, id: int, name: str):
-        """Create a new repository - simple as boss wanted"""
+        """Create a new repository - simple factory method like Grok's example"""
         return cls(id=id, name=name)
 
 async def main():
@@ -28,25 +35,40 @@ async def main():
     engine = create_memory_engine()
     SessionLocal = sessionmaker(engine, class_=AsyncSession)
     
-    # Create a new repository
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # CREATE - Create a new repository
     async with SessionLocal() as session:
         new_repo = Repository.create(id=1, name="MyProject")
+        session.add(new_repo)
+        await session.commit()
+        await session.refresh(new_repo)
         print(f"Created: {new_repo}")
     
-    # Read the repository
+    # READ - Read the repository
     async with SessionLocal() as session:
-        # Simulate reading from DB
-        repo = Repository(id=1, name="MyProject")
-        print(f"Read: {repo}")
+        result = await session.execute("SELECT id, name FROM repositories WHERE id = 1")
+        repo_data = result.fetchone()
+        if repo_data:
+            print(f"Read: Repository(id={repo_data[0]}, name='{repo_data[1]}')")
     
-    # Update the repository
+    # UPDATE - Update the repository
     async with SessionLocal() as session:
-        repo.name = "UpdatedProject"
-        print(f"Updated: {repo}")
+        await session.execute("UPDATE repositories SET name = 'UpdatedProject' WHERE id = 1")
+        await session.commit()
+        updated = await session.execute("SELECT name FROM repositories WHERE id = 1")
+        updated_name = updated.fetchone()[0]
+        print(f"Updated: Repository(name='{updated_name}')")
     
-    # Delete the repository
+    # DELETE - Delete the repository
     async with SessionLocal() as session:
-        print("Deleted: Repository removed")
+        await session.execute("DELETE FROM repositories WHERE id = 1")
+        await session.commit()
+        check = await session.execute("SELECT COUNT(*) FROM repositories WHERE id = 1")
+        count = check.fetchone()[0]
+        print(f"Deleted: {'Yes' if count == 0 else 'No'}")
     
     # Clean up
     await engine.dispose()
