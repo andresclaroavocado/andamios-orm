@@ -1,72 +1,55 @@
 # Basic Examples
 
-## Ultra Simple Usage (NEW WAY ✨)
+Simple CRUD examples just like boss wanted - following Grok's pattern.
 
-The boss wanted examples to be **super easy** - no session management, no engine setup. Just define models and use them!
+## Examples
 
-### 🚀 Start Here - Ultra Simple CRUD
+### 🚀 Project CRUD
 ```bash
-cd examples/basic
-python ultra_simple_crud.py
+python project_crud.py
 ```
 
-Shows the simplest possible ORM usage:
+Simple Project class with `create()` method:
 ```python
-from simple_models import Project
+class Project:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name
+    
+    @classmethod
+    def create(cls, id: int, name: str):
+        return cls(id=id, name=name)
 
-# Just create and save - library handles everything!
-project = Project(name="My App", project_idea="Build something")
-await project.save()
-
-# Get by ID - super simple
-found = await Project.get(project.id)
-
-# Update and save
-found.name = "Updated App"
-await found.save()
-
-# Delete
-await found.delete()
+# Usage
+project = Project.create(id=1, name="MyWebApp")
 ```
 
-### 📁 Repository Example
+### 📁 Repository CRUD
 ```bash
-python repository_simple.py
+python repository_crud.py
 ```
 
-### 📄 Document/Conversation Examples
-Use the same pattern with `simple_models.py` - all models work the same way!
+Same pattern for Repository:
+```python
+class Repository:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name
+    
+    @classmethod
+    def create(cls, id: int, name: str):
+        return cls(id=id, name=name)
 
-## Before/After Comparison
-
-### ❌ OLD WAY (Complex)
-```bash
-python project_crud.py  # See how complex it was before
+# Usage  
+repo = Repository.create(id=1, name="MyProject")
 ```
 
-The old way required:
-- Manual engine creation
-- Session management  
-- Context managers
-- Manual commits
-- Table creation
+## Pattern
 
-### ✅ NEW WAY (Simple)
-```bash  
-python ultra_simple_crud.py  # See how simple it is now
-```
+All examples follow the same simple pattern from Grok:
+1. Simple class with `__init__` and `__repr__`
+2. Class method `create()` for instantiation  
+3. Basic CRUD operations in async functions
+4. No complex ORM features
 
-The new way requires:
-- Just import the model
-- Use `await model.save()`, `await Model.get(id)`, etc.
-- Library handles everything internally
-
-## Key Benefits
-
-1. **Zero Configuration** - No setup needed
-2. **No Session Management** - Library handles it
-3. **Auto Table Creation** - Tables created automatically  
-4. **Simple API** - Just `save()`, `get()`, `delete()`
-5. **One Import** - `from simple_models import Model`
-
-This is exactly what the boss wanted - **"super fácil de usar"**!
+Just like boss wanted - **simple examples, no over-engineering!**

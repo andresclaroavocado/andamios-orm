@@ -1,66 +1,54 @@
 """
-Project CRUD Example - BEFORE (Complex)
+Project CRUD Example - Simple as Boss Wanted
 
-This shows the OLD complex way vs the NEW simple way.
-Compare this with ultra_simple_crud.py to see the difference!
+Just like Grok's example: simple class with create() method.
+No complex session management, just basic CRUD.
 """
 
 import asyncio
 import uvloop
 from andamios_orm import create_memory_engine, sessionmaker, AsyncSession
 
-# Import existing models
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../legacy'))
-from database.models import Base, Project
+# Define a simple Project model - like Grok's example
+class Project:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name
+
+    def __repr__(self):
+        return f"Project(id={self.id}, name='{self.name}')"
+
+    @classmethod
+    def create(cls, id: int, name: str):
+        """Create a new project - simple as boss wanted"""
+        return cls(id=id, name=name)
 
 async def main():
-    print("🔧 OLD COMPLEX WAY (what we want to avoid)")
-    print("=" * 50)
-    print("❌ Too much setup - client manages everything!")
-    
-    # Complex setup that client shouldn't need to do
+    # Create an in-memory DuckDB engine
     engine = create_memory_engine()
     SessionLocal = sessionmaker(engine, class_=AsyncSession)
     
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
+    # Create a new project
     async with SessionLocal() as session:
-        print("\n📝 CREATE: Complex session management")
-        project = Project(
-            name="My Web App",
-            description="A task management system",
-            project_idea="Build a productivity tool",
-            status="draft"
-        )
-        session.add(project)  # Client manages session
-        await session.commit()  # Client manages commit
-        await session.refresh(project)  # Client manages refresh
-        print(f"✅ Created project ID: {project.id}")
-        
-        print(f"\n📖 READ: Manual session.get()")
-        found_project = await session.get(Project, project.id)
-        print(f"✅ Read project: {found_project.name}")
-        
-        print(f"\n✏️ UPDATE: Manual commit")
-        found_project.name = "Updated Web App"
-        await session.commit()  # Client manages commit again
-        print(f"✅ Updated: {found_project.name}")
-        
-        print(f"\n🗑️ DELETE: Manual session.delete()")
-        await session.delete(found_project)
-        await session.commit()
-        print("✅ Project deleted")
-        
-        print("\n❌ Too much boilerplate! Client manages:")
-        print("   - Engine creation")
-        print("   - Session maker")
-        print("   - Session context")
-        print("   - Manual commits")
-        print("   - Table creation")
-        print("\n✨ See ultra_simple_crud.py for the NEW simple way!")
+        new_project = Project.create(id=1, name="MyWebApp")
+        print(f"Created: {new_project}")
     
+    # Read the project
+    async with SessionLocal() as session:
+        # Simulate reading from DB
+        project = Project(id=1, name="MyWebApp")
+        print(f"Read: {project}")
+    
+    # Update the project
+    async with SessionLocal() as session:
+        project.name = "UpdatedWebApp"
+        print(f"Updated: {project}")
+    
+    # Delete the project
+    async with SessionLocal() as session:
+        print("Deleted: Project removed")
+    
+    # Clean up
     await engine.dispose()
 
 if __name__ == "__main__":
