@@ -1,45 +1,59 @@
 # Basic Examples
 
-Simple CRUD examples using Model class methods.
+Simple CRUD examples using Model class methods for all 4 models.
 
-## Examples
+## Complete Example (All Models)
 
-### Repository CRUD
+### All Models in One File
 ```bash
-python repository_simple_final.py
+python all_models_crud.py
 ```
 
-**Usage pattern:**
-```python
-# CREATE - Just Model.create() and done!
-repo = await Repository.create(
-    project_id=1,
-    name="backend-api",
-    description="Main backend API service",
-    repo_type="backend",
-    github_url="https://github.com/user/backend-api"
-)
+Demonstrates CRUD operations for all 4 models:
+- **Project** - Main project management
+- **Repository** - Code repositories  
+- **Conversation** - Project conversations
+- **Document** - Project documentation
 
-# READ - Simple Model.read()
-found_repo = await Repository.read(repo.id)
-
-# UPDATE - Simple Model.update()  
-updated_repo = await Repository.update(
-    repo.id, 
-    name="advanced-backend-api",
-    repo_type="microservice"
-)
-
-# DELETE - Simple Model.delete()
-deleted = await Repository.delete(repo.id)
-```
+## Individual Model Examples
 
 ### Project CRUD
 ```bash
 python project_simple_final.py
 ```
 
-Same pattern for Project model.
+### Repository CRUD  
+```bash
+python repository_simple_final.py
+```
+
+### Conversation CRUD
+```bash
+python conversation_simple_final.py
+```
+
+### Document CRUD
+```bash
+python document_simple_final.py
+```
+
+## Usage Pattern
+
+All models follow the same simple pattern:
+
+```python
+# CREATE - Just Model.create() and done!
+model = await Model.create(field1="value1", field2="value2")
+
+# READ - Simple Model.read()
+found = await Model.read(model.id)
+
+# UPDATE - Simple Model.update()  
+updated = await Model.update(model.id, field1="new_value")
+
+# DELETE - Simple Model.delete()
+deleted = await Model.delete(model.id)
+```
 
 ## Features
 
@@ -48,5 +62,15 @@ Same pattern for Project model.
 - `Model.update(id, **kwargs)` - updates fields
 - `Model.delete(id)` - deletes by ID
 - Uses async/await
-- Works with existing models
+- Works with all existing models
 - Clean, simple operations
+
+## Model Coverage
+
+✅ **Project** - project_simple_final.py  
+✅ **Repository** - repository_simple_final.py  
+✅ **Conversation** - conversation_simple_final.py  
+✅ **Document** - document_simple_final.py  
+✅ **All Models** - all_models_crud.py
+
+**Status: 4/4 models completed (100%)**
