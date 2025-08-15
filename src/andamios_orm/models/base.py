@@ -28,29 +28,22 @@ class Model(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
     
-    async def save(self) -> "Model":
-        """Save this model instance to the database."""
+    @classmethod
+    async def create(cls, **kwargs: Any) -> "Model":
+        """Create and persist a new model instance."""
         session = await get_session()
         try:
-            session.add(self)
+            instance = cls(**kwargs)
+            session.add(instance)
             await session.commit()
-            await session.refresh(self)
-            return self
-        finally:
-            await session.close()
-    
-    async def delete(self) -> None:
-        """Delete this model instance from the database."""
-        session = await get_session()
-        try:
-            await session.delete(self)
-            await session.commit()
+            await session.refresh(instance)
+            return instance
         finally:
             await session.close()
     
     @classmethod
-    async def get(cls, id: int) -> Optional["Model"]:
-        """Get a model instance by ID."""
+    async def read(cls, id: int) -> Optional["Model"]:
+        """Read a model instance by ID."""
         session = await get_session()
         try:
             return await session.get(cls, id)
@@ -58,21 +51,33 @@ class Model(Base):
             await session.close()
     
     @classmethod
-    async def get_all(cls) -> List["Model"]:
-        """Get all instances of this model."""
-        from sqlalchemy import select
+    async def update(cls, id: int, **kwargs: Any) -> Optional["Model"]:
+        """Update a model instance by ID."""
         session = await get_session()
         try:
-            result = await session.execute(select(cls))
-            return result.scalars().all()
+            instance = await session.get(cls, id)
+            if instance:
+                for key, value in kwargs.items():
+                    setattr(instance, key, value)
+                await session.commit()
+                await session.refresh(instance)
+            return instance
         finally:
             await session.close()
     
     @classmethod
-    async def create(cls, **kwargs: Any) -> "Model":
-        """Create and save a new model instance."""
-        instance = cls(**kwargs)
-        return await instance.save()
+    async def delete(cls, id: int) -> bool:
+        """Delete a model instance by ID."""
+        session = await get_session()
+        try:
+            instance = await session.get(cls, id)
+            if instance:
+                await session.delete(instance)
+                await session.commit()
+                return True
+            return False
+        finally:
+            await session.close()
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary."""

@@ -1,63 +1,52 @@
 # Basic Examples
 
-## 🎯 Minimal Examples (Start Here!)
+Simple CRUD examples using Model class methods.
 
-These follow the principle of "simplest possible" - no session management, no async complexity.
+## Examples
 
-### Ultra Simple CREATE
+### Repository CRUD
 ```bash
-python minimal_example.py
+python repository_simple_final.py
 ```
 
-**The simplest possible example** (addresses all complexity concerns):
+**Usage pattern:**
 ```python
-from sqlalchemy import Column, String
-from andamios_orm import SimpleModel, save, create_tables
+# CREATE - Just Model.create() and done!
+repo = await Repository.create(
+    project_id=1,
+    name="backend-api",
+    description="Main backend API service",
+    repo_type="backend",
+    github_url="https://github.com/user/backend-api"
+)
 
-class Repository(SimpleModel):
-    __tablename__ = "repositories"
-    name = Column(String(255), nullable=False)
+# READ - Simple Model.read()
+found_repo = await Repository.read(repo.id)
 
-# Setup (one line)
-create_tables()
+# UPDATE - Simple Model.update()  
+updated_repo = await Repository.update(
+    repo.id, 
+    name="advanced-backend-api",
+    repo_type="microservice"
+)
 
-# Use (two lines) 
-repo = Repository(name="backend-api")
-saved_repo = save(repo)
-
-print(f"Created repository: {saved_repo.name} (ID: {saved_repo.id})")
+# DELETE - Simple Model.delete()
+deleted = await Repository.delete(repo.id)
 ```
 
-### Simple Operations
+### Project CRUD
 ```bash
-python simple_create.py  # CREATE operation
-python simple_read.py    # READ operations
+python project_simple_final.py
 ```
 
-## 🔧 Advanced Examples
+Same pattern for Project model.
 
-For users who need more control over sessions and async operations:
+## Features
 
-```bash
-python project_crud.py    # Full CRUD with session management
-python repository_crud.py # Complete example with all operations
-```
-
-## Key Differences
-
-**✅ Simple API (Recommended for examples):**
-- No session management visible
-- No async/await complexity
-- Focus on single operations
-- Self-contained models
-- Minimal setup: `create_tables()`
-- Simple functions: `save()`, `find_by_id()`, `find_all()`
-
-**🔧 Advanced API (For production use):**
-- Full session control
-- Async/await for performance
-- Complete CRUD operations
-- External model references
-- Manual engine/session setup
-
-**Use Simple API for learning and demos, Advanced API for real applications.**
+- `Model.create()` - creates and persists immediately
+- `Model.read(id)` - reads by ID
+- `Model.update(id, **kwargs)` - updates fields
+- `Model.delete(id)` - deletes by ID
+- Uses async/await
+- Works with existing models
+- Clean, simple operations
