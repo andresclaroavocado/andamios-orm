@@ -2,39 +2,26 @@
 
 Simple CRUD examples using Model class methods for all 4 models.
 
-## Complete Example (All Models)
-
-### All Models in One File
-```bash
-python all_models_crud.py
-```
-
-Demonstrates CRUD operations for all 4 models:
-- **Project** - Main project management
-- **Repository** - Code repositories  
-- **Conversation** - Project conversations
-- **Document** - Project documentation
-
-## Individual Model Examples
+## Examples
 
 ### Project CRUD
 ```bash
-python project_simple_final.py
+python project_crud.py
 ```
 
 ### Repository CRUD  
 ```bash
-python repository_simple_final.py
+python repository_crud.py
 ```
 
 ### Conversation CRUD
 ```bash
-python conversation_simple_final.py
+python conversation_crud.py
 ```
 
 ### Document CRUD
 ```bash
-python document_simple_final.py
+python document_crud.py
 ```
 
 ## Usage Pattern
@@ -67,10 +54,9 @@ deleted = await Model.delete(model.id)
 
 ## Model Coverage
 
-✅ **Project** - project_simple_final.py  
-✅ **Repository** - repository_simple_final.py  
-✅ **Conversation** - conversation_simple_final.py  
-✅ **Document** - document_simple_final.py  
-✅ **All Models** - all_models_crud.py
+✅ **Project** - project_crud.py  
+✅ **Repository** - repository_crud.py  
+✅ **Conversation** - conversation_crud.py  
+✅ **Document** - document_crud.py  
 
 **Status: 4/4 models completed (100%)**
