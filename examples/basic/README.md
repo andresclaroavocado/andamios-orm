@@ -1,65 +1,63 @@
 # Basic Examples
 
-Simple CRUD examples with clean factory pattern and real ORM functionality.
+## 🎯 Minimal Examples (Start Here!)
 
-## Examples
+These follow the principle of "simplest possible" - no session management, no async complexity.
 
-### 🚀 Project CRUD
+### Ultra Simple CREATE
 ```bash
-python project_crud.py
+python minimal_example.py
 ```
 
-SQLAlchemy model with clean factory pattern:
+**The simplest possible example** (addresses all complexity concerns):
 ```python
-class Project(Base):
-    __tablename__ = "projects"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    
-    @classmethod
-    def create(cls, id: int, name: str):
-        return cls(id=id, name=name)
+from sqlalchemy import Column, String
+from andamios_orm import SimpleModel, save, create_tables
 
-# Usage - works with real DuckDB
-project = Project.create(id=1, name="MyWebApp")
-session.add(project)
-await session.commit()
-```
-
-### 📁 Repository CRUD
-```bash
-python repository_crud.py
-```
-
-Same pattern for Repository with actual database operations:
-```python
-class Repository(Base):
+class Repository(SimpleModel):
     __tablename__ = "repositories"
-    
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    
-    @classmethod
-    def create(cls, id: int, name: str):
-        return cls(id=id, name=name)
 
-# Usage - persists to DuckDB
-repo = Repository.create(id=1, name="MyProject")
+# Setup (one line)
+create_tables()
+
+# Use (two lines) 
+repo = Repository(name="backend-api")
+saved_repo = save(repo)
+
+print(f"Created repository: {saved_repo.name} (ID: {saved_repo.id})")
 ```
 
-## Implementation Details
+### Simple Operations
+```bash
+python simple_create.py  # CREATE operation
+python simple_read.py    # READ operations
+```
 
-✅ **Simple Factory Pattern:**
-- Clean `create()` class method
-- Clear `__repr__` methods
-- Basic CRUD operations
-- Minimal complexity
+## 🔧 Advanced Examples
 
-✅ **Real ORM Integration:**
-- SQLAlchemy models with `Base`
-- Actual database table creation
-- Real CRUD operations with DuckDB
-- Proper async/await with sessions
+For users who need more control over sessions and async operations:
 
-**Result:** Simple examples with working ORM functionality!
+```bash
+python project_crud.py    # Full CRUD with session management
+python repository_crud.py # Complete example with all operations
+```
+
+## Key Differences
+
+**✅ Simple API (Recommended for examples):**
+- No session management visible
+- No async/await complexity
+- Focus on single operations
+- Self-contained models
+- Minimal setup: `create_tables()`
+- Simple functions: `save()`, `find_by_id()`, `find_all()`
+
+**🔧 Advanced API (For production use):**
+- Full session control
+- Async/await for performance
+- Complete CRUD operations
+- External model references
+- Manual engine/session setup
+
+**Use Simple API for learning and demos, Advanced API for real applications.**
