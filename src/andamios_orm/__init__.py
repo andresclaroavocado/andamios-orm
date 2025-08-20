@@ -53,9 +53,15 @@ from .core import (
 from .models import Model, Base, Project, Conversation, Document, Repository
 from .exceptions import (
     AndamiosORMException, ValidationError, NotFoundError, 
-    DatabaseConnectionError, DatabaseOperationError, ConfigurationError
+    DatabaseConnectionError, DatabaseOperationError, ConfigurationError,
+    TransactionError, MigrationError, QueryError,
+    handle_database_error, handle_validation_error, handle_not_found_error
 )
-from .logging import setup_logging, get_logger
+from .logging import (
+    setup_logging, get_logger, 
+    log_async_performance, log_sync_performance, log_context,
+    LoggingConfig, DEVELOPMENT_CONFIG, PRODUCTION_CONFIG, TESTING_CONFIG
+)
 
 # Package metadata
 __version__ = "0.1.0"
@@ -107,10 +113,23 @@ __all__ = [
     "DatabaseConnectionError", 
     "DatabaseOperationError", 
     "ConfigurationError",
+    "TransactionError",
+    "MigrationError",
+    "QueryError",
+    "handle_database_error",
+    "handle_validation_error", 
+    "handle_not_found_error",
     
     # Logging utilities  
     "setup_logging", 
     "get_logger",
+    "log_async_performance",
+    "log_sync_performance",
+    "log_context",
+    "LoggingConfig",
+    "DEVELOPMENT_CONFIG",
+    "PRODUCTION_CONFIG", 
+    "TESTING_CONFIG",
     
     # SQLAlchemy column types (for convenience)
     "Column",
