@@ -1,10 +1,18 @@
-# GitHub Issues for Andamios ORM Implementation
+# Instructions to Create GitHub Issues
+
+Since GitHub CLI is not available and I don't have API authentication, please create these issues manually at:
+
+**https://github.com/andresclaroavocado/andamios-orm/issues/new**
 
 ## Issue 1: Implement Project model with async CRUD operations
 
-**Title:** Implement Project model with async CRUD operations
+**Copy this title:**
+```
+Implement Project model with async CRUD operations
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the Project model class with async CRUD operations to support the project_crud.py example.
 
@@ -56,14 +64,19 @@ gone = await Project.read(project.id)  # Should return None
 - [ ] Returns proper instances with correct data
 - [ ] DELETE followed by READ returns None
 - [ ] Compatible with DuckDB and uvloop
+```
 
 ---
 
 ## Issue 2: Implement Conversation model with async CRUD operations
 
-**Title:** Implement Conversation model with async CRUD operations
+**Copy this title:**
+```
+Implement Conversation model with async CRUD operations
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the Conversation model class with async CRUD operations to support the conversation_crud.py example.
 
@@ -124,14 +137,19 @@ gone = await Conversation.read(convo.id)  # Should return None
 - [ ] Foreign key relationship with Project works
 - [ ] DELETE followed by READ returns None
 - [ ] Compatible with DuckDB and uvloop
+```
 
 ---
 
 ## Issue 3: Implement Document model with async CRUD operations
 
-**Title:** Implement Document model with async CRUD operations
+**Copy this title:**
+```
+Implement Document model with async CRUD operations
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the Document model class with async CRUD operations to support the document_crud.py example.
 
@@ -192,14 +210,19 @@ gone = await Document.read(doc.id)  # Should return None
 - [ ] Foreign key relationship with Project works
 - [ ] DELETE followed by READ returns None
 - [ ] Compatible with DuckDB and uvloop
+```
 
 ---
 
 ## Issue 4: Implement Repository model with async CRUD operations
 
-**Title:** Implement Repository model with async CRUD operations
+**Copy this title:**
+```
+Implement Repository model with async CRUD operations
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the Repository model class with async CRUD operations to support the repository_crud.py example.
 
@@ -258,14 +281,19 @@ gone = await Repository.read(repo.id)  # Should return None
 - [ ] Foreign key relationship with Project works
 - [ ] DELETE followed by READ returns None
 - [ ] Compatible with DuckDB and uvloop
+```
 
 ---
 
 ## Issue 5: Implement database engine and session management
 
-**Title:** Implement database engine and session management for async operations
+**Copy this title:**
+```
+Implement database engine and session management for async operations
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the core database infrastructure to support async CRUD operations for all models.
 
@@ -308,14 +336,19 @@ Implement the core database infrastructure to support async CRUD operations for 
 - [ ] Session management is transparent to users
 - [ ] Examples run successfully without manual setup
 - [ ] Compatible with DuckDB's columnar architecture
+```
 
 ---
 
 ## Issue 6: Update package exports and imports
 
-**Title:** Update package exports and imports for model availability
+**Copy this title:**
+```
+Update package exports and imports for model availability
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Update the main package `__init__.py` to export all four models (Project, Conversation, Document, Repository) so they can be imported directly from `andamios_orm`.
 
@@ -348,31 +381,30 @@ from andamios_orm import create_engine, AsyncSession, etc.
 - [ ] Backward compatibility with existing core API
 - [ ] Clean module organization
 - [ ] Proper type hints for IDEs
+```
 
 ---
 
-## Implementation Priority
+## Quick Creation Links:
 
-1. **Issue 5** (Database engine and session management) - Foundation
-2. **Issue 1** (Project model) - Base model implementation
-3. **Issue 2, 3, 4** (Conversation, Document, Repository models) - Additional models
-4. **Issue 6** (Package exports) - Final integration
-
-## Testing Strategy
-
-Each issue should include:
-- Unit tests for the model
-- Integration tests with database
-- Example validation tests
-- Performance benchmarks
+1. [Create Issue 1](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+2. [Create Issue 2](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+3. [Create Issue 3](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+4. [Create Issue 4](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+5. [Create Issue 5](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+6. [Create Issue 6](https://github.com/andresclaroavocado/andamios-orm/issues/new)
 
 ---
 
 ## Issue 7: Fix Base Model CRUD Implementation Issues
 
-**Title:** Fix async CRUD operations in base Model class
+**Copy this title:**
+```
+Fix async CRUD operations in base Model class
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 The current base Model class in `src/andamios_orm/models/base.py` has several issues that prevent the async CRUD operations from working correctly.
 
@@ -407,14 +439,19 @@ The current base Model class in `src/andamios_orm/models/base.py` has several is
 - [ ] Auto-table creation works
 - [ ] Error handling for all database operations
 - [ ] Examples can use the models successfully
+```
 
 ---
 
 ## Issue 8: Add DuckDB Driver Dependencies
 
-**Title:** Add required DuckDB async driver to project dependencies
+**Copy this title:**
+```
+Add required DuckDB async driver to project dependencies
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 The project currently references DuckDB in the engine configuration but doesn't have the required async driver dependency installed.
 
@@ -443,14 +480,19 @@ The project currently references DuckDB in the engine configuration but doesn't 
 - [ ] Engine creation works without import errors
 - [ ] Examples can connect to DuckDB successfully
 - [ ] Both memory and file databases work
+```
 
 ---
 
 ## Issue 9: Implement Concrete Model Classes
 
-**Title:** Create Project, Conversation, Document, and Repository model classes
+**Copy this title:**
+```
+Create Project, Conversation, Document, and Repository model classes
+```
 
-**Body:**
+**Copy this body:**
+```markdown
 ## Summary
 Implement the four concrete model classes that the examples expect to import from the main package.
 
@@ -525,24 +567,36 @@ class Repository(Model):
 - [ ] Models are importable from `andamios_orm` package
 - [ ] All timestamp fields work correctly
 - [ ] JSON field works for Conversation messages
+```
 
 ---
 
-## Updated Implementation Priority
+## Updated Quick Creation Links:
 
+1. [Create Issue 1](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+2. [Create Issue 2](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+3. [Create Issue 3](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+4. [Create Issue 4](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+5. [Create Issue 5](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+6. [Create Issue 6](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+7. [Create Issue 7](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+8. [Create Issue 8](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+9. [Create Issue 9](https://github.com/andresclaroavocado/andamios-orm/issues/new)
+
+## Implementation Priority
+
+**Priority Order:**
 1. **Issue 8** - Add DuckDB dependencies (required for everything)
 2. **Issue 7** - Fix base Model CRUD implementation 
 3. **Issue 9** - Implement concrete model classes
 4. **Issue 5** - Complete database infrastructure (if needed)
 5. **Issue 6** - Update package exports (final integration)
+6. **Issues 1-4** - Individual model implementations (can be done in parallel)
 
-## Success Verification
-
-After implementing these issues, verify by running:
-```bash
-python examples/run_examples.py
-```
-
-Expected output: All 4 CRUD examples complete successfully with ✅ status.
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
+## Recommended Labels:
+- `enhancement`
+- `backend`
+- `models`
+- `async`
+- `crud`
+- `database`

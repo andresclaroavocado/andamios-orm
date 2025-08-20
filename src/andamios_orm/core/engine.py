@@ -5,16 +5,20 @@ Database engine management for Andamios ORM - DuckDB optimized
 import uvloop
 import asyncio
 from typing import Optional, Any, Dict
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy import create_engine as create_sync_engine, Engine
+from sqlalchemy.pool import StaticPool
 
 
 def create_engine(
-    url: str = "duckdb+duckdb_engine:///:memory:",
+    url: str = "duckdb:///:memory:",
     echo: bool = False,
     **kwargs: Any
-) -> AsyncEngine:
+) -> Engine:
     """
-    Create an async DuckDB engine optimized for columnar operations.
+    Create a DuckDB engine optimized for columnar operations.
+    
+    Note: DuckDB doesn't support async natively, so we use sync engine
+    with proper async session handling.
     
     Args:
         url: DuckDB URL (defaults to in-memory database)
@@ -22,7 +26,7 @@ def create_engine(
         **kwargs: Additional engine arguments
         
     Returns:
-        AsyncEngine instance optimized for DuckDB
+        Engine instance optimized for DuckDB
     """
     # Ensure uvloop is set as the event loop policy for optimal performance
     if hasattr(uvloop, 'install'):
@@ -32,6 +36,8 @@ def create_engine(
     duckdb_kwargs: Dict[str, Any] = {
         "echo": echo,
         "future": True,  # SQLAlchemy 2.0 style
+        # Use StaticPool to ensure single connection for in-memory DB
+        "poolclass": StaticPool if ":memory:" in url else None,
         **kwargs
     }
     
@@ -40,10 +46,10 @@ def create_engine(
     duckdb_kwargs.pop("pool_size", None)
     duckdb_kwargs.pop("max_overflow", None)
     
-    return create_async_engine(url, **duckdb_kwargs)
+    return create_sync_engine(url, **duckdb_kwargs)
 
 
-def create_memory_engine(echo: bool = False, **kwargs: Any) -> AsyncEngine:
+def create_memory_engine(echo: bool = False, **kwargs: Any) -> Engine:
     """
     Create an in-memory DuckDB engine for testing and examples.
     
@@ -52,12 +58,12 @@ def create_memory_engine(echo: bool = False, **kwargs: Any) -> AsyncEngine:
         **kwargs: Additional engine arguments
         
     Returns:
-        AsyncEngine instance with in-memory DuckDB
+        Engine instance with in-memory DuckDB
     """
-    return create_engine("duckdb+duckdb_engine:///:memory:", echo=echo, **kwargs)
+    return create_engine("duckdb:///:memory:", echo=echo, **kwargs)
 
 
-def create_file_engine(db_path: str, echo: bool = False, **kwargs: Any) -> AsyncEngine:
+def create_file_engine(db_path: str, echo: bool = False, **kwargs: Any) -> Engine:
     """
     Create a file-based DuckDB engine for persistent storage.
     
@@ -67,6 +73,6 @@ def create_file_engine(db_path: str, echo: bool = False, **kwargs: Any) -> Async
         **kwargs: Additional engine arguments
         
     Returns:
-        AsyncEngine instance with file-based DuckDB
+        Engine instance with file-based DuckDB
     """
-    return create_engine(f"duckdb+duckdb_engine:///{db_path}", echo=echo, **kwargs)
+    return create_engine(f"duckdb:///{db_path}", echo=echo, **kwargs)

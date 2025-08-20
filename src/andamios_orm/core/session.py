@@ -2,18 +2,24 @@
 Session management for Andamios ORM
 """
 
+import asyncio
 from typing import Type, Optional, Any
-from sqlalchemy.ext.asyncio import AsyncSession as SQLAlchemyAsyncSession, async_sessionmaker
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import Engine
+from sqlalchemy.orm import sessionmaker as sync_sessionmaker, Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from .engine import create_memory_engine
+from ..exceptions import DatabaseConnectionError
+from ..logging import get_logger
 
 # Global engine and session maker - initialized automatically
-_global_engine: Optional[AsyncEngine] = None
-_global_sessionmaker: Optional[async_sessionmaker] = None
+_global_engine: Optional[Engine] = None
+_global_sessionmaker: Optional[sync_sessionmaker] = None
+
+logger = get_logger("session")
 
 
-def init_db(engine: Optional[AsyncEngine] = None) -> None:
+def init_db(engine: Optional[Engine] = None) -> None:
     """Initialize the global database engine and session maker.
     
     Args:
@@ -25,14 +31,76 @@ def init_db(engine: Optional[AsyncEngine] = None) -> None:
         engine = create_memory_engine()
     
     _global_engine = engine
-    _global_sessionmaker = async_sessionmaker(
+    _global_sessionmaker = sync_sessionmaker(
         engine,
-        class_=SQLAlchemyAsyncSession,
         expire_on_commit=False
     )
 
 
-async def get_session() -> SQLAlchemyAsyncSession:
+class AsyncSessionWrapper:
+    """Wrapper to provide async interface for sync SQLAlchemy session."""
+    
+    def __init__(self, session: Session):
+        self._session = session
+    
+    async def add(self, instance):
+        """Add instance to session."""
+        try:
+            await asyncio.to_thread(self._session.add, instance)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to add instance to session: {e}")
+            raise DatabaseConnectionError(f"Failed to add instance: {e}")
+    
+    async def commit(self):
+        """Commit the session."""
+        try:
+            await asyncio.to_thread(self._session.commit)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to commit session: {e}")
+            raise DatabaseConnectionError(f"Failed to commit: {e}")
+    
+    async def rollback(self):
+        """Rollback the session."""
+        try:
+            await asyncio.to_thread(self._session.rollback)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to rollback session: {e}")
+            raise DatabaseConnectionError(f"Failed to rollback: {e}")
+    
+    async def refresh(self, instance):
+        """Refresh instance from database."""
+        try:
+            await asyncio.to_thread(self._session.refresh, instance)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to refresh instance: {e}")
+            raise DatabaseConnectionError(f"Failed to refresh: {e}")
+    
+    async def get(self, model_class, id):
+        """Get model by ID."""
+        try:
+            return await asyncio.to_thread(self._session.get, model_class, id)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to get instance: {e}")
+            raise DatabaseConnectionError(f"Failed to get: {e}")
+    
+    async def delete(self, instance):
+        """Delete instance from session."""
+        try:
+            await asyncio.to_thread(self._session.delete, instance)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to delete instance: {e}")
+            raise DatabaseConnectionError(f"Failed to delete: {e}")
+    
+    async def close(self):
+        """Close the session."""
+        try:
+            await asyncio.to_thread(self._session.close)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to close session: {e}")
+            raise DatabaseConnectionError(f"Failed to close: {e}")
+
+
+async def get_session() -> AsyncSessionWrapper:
     """Get a database session. Initializes DB automatically if needed."""
     global _global_engine, _global_sessionmaker
     
@@ -41,35 +109,94 @@ async def get_session() -> SQLAlchemyAsyncSession:
     
     # Auto-create tables if they don't exist
     if _global_engine is not None:
-        from ..models.base import Base
-        async with _global_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+        # Create tables using DuckDB-compatible DDL
+        await _create_tables_duckdb_compatible(_global_engine)
     
-    return _global_sessionmaker()
+    session = _global_sessionmaker()
+    return AsyncSessionWrapper(session)
+
+
+async def _create_tables_duckdb_compatible(engine):
+    """Create tables using DuckDB-compatible DDL."""
+    ddl_statements = [
+        """
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            project_idea TEXT NOT NULL,
+            architecture JSON,
+            status VARCHAR(50) DEFAULT 'draft',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS conversations (
+            id INTEGER PRIMARY KEY,
+            project_id INTEGER,
+            phase VARCHAR(100) DEFAULT 'project_idea',
+            messages JSON DEFAULT '[]',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS documents (
+            id INTEGER PRIMARY KEY,
+            project_id INTEGER,
+            name VARCHAR(255) NOT NULL,
+            content TEXT,
+            doc_type VARCHAR(100),
+            file_path VARCHAR(500),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS repositories (
+            id INTEGER PRIMARY KEY,
+            project_id INTEGER,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            repo_type VARCHAR(100),
+            github_url VARCHAR(500),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+        """
+    ]
+    
+    from sqlalchemy import text
+    
+    def execute_ddl():
+        with engine.connect() as conn:
+            for ddl in ddl_statements:
+                conn.execute(text(ddl.strip()))
+            conn.commit()
+    
+    await asyncio.to_thread(execute_ddl)
 
 
 def sessionmaker(
-    engine: AsyncEngine,
-    class_: Type[SQLAlchemyAsyncSession] = SQLAlchemyAsyncSession,
+    engine: Engine,
     **kwargs: Any
-) -> async_sessionmaker[SQLAlchemyAsyncSession]:
+) -> sync_sessionmaker:
     """
-    Create an async session maker.
+    Create a session maker.
     
     Args:
         engine: Database engine
-        class_: Session class to use
         **kwargs: Additional session arguments
         
     Returns:
-        Async session maker
+        Session maker
     """
-    return async_sessionmaker(
+    return sync_sessionmaker(
         engine,
-        class_=class_,
         **kwargs
     )
 
 
-# Re-export AsyncSession for convenience
-AsyncSession = SQLAlchemyAsyncSession
+# Re-export AsyncSession wrapper for convenience
+AsyncSession = AsyncSessionWrapper

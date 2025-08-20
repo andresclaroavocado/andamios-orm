@@ -1,9 +1,21 @@
 """
 Models module for Andamios ORM
 
-This module will contain model definitions, base classes,
+This module contains model definitions, base classes,
 and model-related utilities.
 """
 
-# Model exports will be added here
-__all__ = []
+from .base import Model, Base
+from .project import Project
+from .conversation import Conversation
+from .document import Document
+from .repository import Repository
+
+__all__ = [
+    "Model", 
+    "Base",
+    "Project",
+    "Conversation", 
+    "Document",
+    "Repository"
+]
