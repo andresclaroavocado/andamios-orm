@@ -3,12 +3,14 @@ Session management for Andamios ORM
 """
 
 import asyncio
-from typing import Type, Optional, Any
-from sqlalchemy import Engine
+from typing import Type, Optional, Any, AsyncContextManager, Callable
+from contextlib import asynccontextmanager
+from sqlalchemy import Engine, text
 from sqlalchemy.orm import sessionmaker as sync_sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession as SQLAlchemyAsyncSession
 
-from .engine import create_memory_engine
+from .engine import get_engine, set_engine, create_memory_engine
 from ..exceptions import DatabaseConnectionError
 from ..logging import get_logger
 
@@ -91,6 +93,33 @@ class AsyncSessionWrapper:
             logger.error(f"Failed to delete instance: {e}")
             raise DatabaseConnectionError(f"Failed to delete: {e}")
     
+    async def execute(self, statement, parameters=None):
+        """Execute a SQL statement."""
+        try:
+            if parameters:
+                return await asyncio.to_thread(self._session.execute, statement, parameters)
+            else:
+                return await asyncio.to_thread(self._session.execute, statement)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to execute statement: {e}")
+            raise DatabaseConnectionError(f"Failed to execute: {e}")
+    
+    async def bulk_insert_mappings(self, model_class, mappings):
+        """Bulk insert mappings."""
+        try:
+            await asyncio.to_thread(self._session.bulk_insert_mappings, model_class, mappings)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to bulk insert: {e}")
+            raise DatabaseConnectionError(f"Failed to bulk insert: {e}")
+    
+    async def bulk_update_mappings(self, model_class, mappings):
+        """Bulk update mappings."""
+        try:
+            await asyncio.to_thread(self._session.bulk_update_mappings, model_class, mappings)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to bulk update: {e}")
+            raise DatabaseConnectionError(f"Failed to bulk update: {e}")
+    
     async def close(self):
         """Close the session."""
         try:
@@ -98,6 +127,24 @@ class AsyncSessionWrapper:
         except SQLAlchemyError as e:
             logger.error(f"Failed to close session: {e}")
             raise DatabaseConnectionError(f"Failed to close: {e}")
+    
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        asyncio.create_task(self.close())
+    
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit."""
+        if exc_type is not None:
+            await self.rollback()
+        await self.close()
 
 
 async def get_session() -> AsyncSessionWrapper:
@@ -196,6 +243,138 @@ def sessionmaker(
         engine,
         **kwargs
     )
+
+
+@asynccontextmanager
+async def session_scope() -> AsyncContextManager[AsyncSessionWrapper]:
+    """
+    Provide a transactional scope around a series of operations.
+    
+    Usage:
+        async with session_scope() as session:
+            # do work
+            await session.commit()
+    """
+    session = await get_session()
+    try:
+        yield session
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
+
+
+@asynccontextmanager
+async def transaction_scope() -> AsyncContextManager[AsyncSessionWrapper]:
+    """
+    Provide an auto-committing transactional scope.
+    
+    Usage:
+        async with transaction_scope() as session:
+            # do work - auto commits on success, rollbacks on exception
+    """
+    session = await get_session()
+    try:
+        yield session
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
+
+
+async def with_session(func: Callable[[AsyncSessionWrapper], Any]) -> Any:
+    """
+    Execute a function with a session, handling cleanup automatically.
+    
+    Args:
+        func: Function that takes a session and returns a value
+        
+    Returns:
+        Result of the function
+    """
+    async with session_scope() as session:
+        return await func(session)
+
+
+async def with_transaction(func: Callable[[AsyncSessionWrapper], Any]) -> Any:
+    """
+    Execute a function within a transaction, handling commit/rollback automatically.
+    
+    Args:
+        func: Function that takes a session and returns a value
+        
+    Returns:
+        Result of the function
+    """
+    async with transaction_scope() as session:
+        return await func(session)
+
+
+class SessionManager:
+    """Advanced session manager with connection pooling and lifecycle management."""
+    
+    def __init__(self, engine: Optional[Engine] = None):
+        self.engine = engine or get_engine()
+        self.sessionmaker = sync_sessionmaker(
+            self.engine,
+            expire_on_commit=False
+        )
+    
+    @asynccontextmanager
+    async def session(self) -> AsyncContextManager[AsyncSessionWrapper]:
+        """Get a session with automatic cleanup."""
+        session = AsyncSessionWrapper(self.sessionmaker())
+        try:
+            yield session
+        finally:
+            await session.close()
+    
+    @asynccontextmanager
+    async def transaction(self) -> AsyncContextManager[AsyncSessionWrapper]:
+        """Get a session with automatic transaction handling."""
+        async with self.session() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+    
+    async def execute_raw_sql(self, sql: str, parameters: Optional[dict] = None) -> Any:
+        """Execute raw SQL with proper session management."""
+        async with self.session() as session:
+            result = await session.execute(text(sql), parameters)
+            return result
+    
+    async def bulk_operations(self, operations: list[Callable[[AsyncSessionWrapper], Any]]) -> list[Any]:
+        """Execute multiple operations in a single transaction."""
+        async with self.transaction() as session:
+            results = []
+            for operation in operations:
+                result = await operation(session)
+                results.append(result)
+            return results
+
+
+# Global session manager instance
+_session_manager: Optional[SessionManager] = None
+
+
+def get_session_manager() -> SessionManager:
+    """Get the global session manager instance."""
+    global _session_manager
+    if _session_manager is None:
+        _session_manager = SessionManager()
+    return _session_manager
+
+
+def set_session_manager(manager: SessionManager) -> None:
+    """Set the global session manager instance."""
+    global _session_manager
+    _session_manager = manager
 
 
 # Re-export AsyncSession wrapper for convenience
