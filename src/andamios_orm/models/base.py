@@ -5,8 +5,8 @@ This module contains the base model class with Active Record pattern for simple 
 """
 
 import asyncio
-from typing import Optional, Any, Dict, ClassVar, Type, List
-from sqlalchemy import Column, Integer, DateTime, text
+from typing import Optional, Any, Dict, ClassVar, Type, List, Sequence
+from sqlalchemy import Column, Integer, DateTime, text, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -155,6 +155,78 @@ class Model(Base):
                 raise DatabaseOperationError(f"Failed to delete {cls.__name__}: {e}")
         except Exception as e:
             logger.error(f"Unexpected error deleting {cls.__name__}: {e}")
+            raise
+        finally:
+            await session.close()
+    
+    @classmethod
+    async def list(cls, limit: Optional[int] = None, offset: int = 0) -> List["Model"]:
+        """List model instances with optional pagination."""
+        logger.debug(f"Listing {cls.__name__} with limit={limit}, offset={offset}")
+        session = await get_session()
+        try:
+            try:
+                query = select(cls)
+                if offset > 0:
+                    query = query.offset(offset)
+                if limit is not None:
+                    query = query.limit(limit)
+                
+                result = await session.execute(query)
+                instances = result.scalars().all()
+                logger.debug(f"Found {len(instances)} {cls.__name__} instances")
+                return list(instances)
+                
+            except SQLAlchemyError as e:
+                logger.error(f"Failed to list {cls.__name__}: {e}")
+                raise DatabaseOperationError(f"Failed to list {cls.__name__}: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error listing {cls.__name__}: {e}")
+            raise
+        finally:
+            await session.close()
+    
+    @classmethod
+    async def count(cls) -> int:
+        """Count total number of model instances."""
+        logger.debug(f"Counting {cls.__name__} instances")
+        session = await get_session()
+        try:
+            try:
+                query = select(func.count(cls.id))
+                result = await session.execute(query)
+                count = result.scalar()
+                logger.debug(f"Found {count} {cls.__name__} instances")
+                return count or 0
+                
+            except SQLAlchemyError as e:
+                logger.error(f"Failed to count {cls.__name__}: {e}")
+                raise DatabaseOperationError(f"Failed to count {cls.__name__}: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error counting {cls.__name__}: {e}")
+            raise
+        finally:
+            await session.close()
+    
+    @classmethod
+    async def exists(cls, id: int) -> bool:
+        """Check if a model instance exists by ID."""
+        logger.debug(f"Checking if {cls.__name__} with ID {id} exists")
+        session = await get_session()
+        try:
+            try:
+                query = select(func.count(cls.id)).where(cls.id == id)
+                result = await session.execute(query)
+                count = result.scalar()
+                exists = count > 0
+                logger.debug(f"{cls.__name__} with ID {id} {'exists' if exists else 'does not exist'}")
+                return exists
+                
+            except SQLAlchemyError as e:
+                logger.error(f"Failed to check existence of {cls.__name__} with ID {id}: {e}")
+                raise DatabaseOperationError(f"Failed to check existence: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error checking existence of {cls.__name__}: {e}")
             raise
         finally:
             await session.close()
