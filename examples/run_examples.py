@@ -12,7 +12,6 @@ Usage:
 """
 
 import asyncio
-import uvloop
 import sys
 import os
 import importlib
@@ -149,9 +148,13 @@ async def main():
         list_examples()
         return
     
-    # Use uvloop for better performance
-    if hasattr(uvloop, 'install'):
-        uvloop.install()
+    # Use uvloop for better performance if available
+    try:
+        import uvloop
+        if hasattr(uvloop, 'install'):
+            uvloop.install()
+    except ImportError:
+        pass  # Fall back to default event loop
     
     runner = ExampleRunner()
     

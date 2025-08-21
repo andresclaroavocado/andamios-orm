@@ -2,13 +2,20 @@
 Database engine management for Andamios ORM - DuckDB optimized
 """
 
-import uvloop
 import asyncio
 from typing import Optional, Any, Dict, AsyncContextManager
 from sqlalchemy import create_engine as create_sync_engine, Engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.pool import StaticPool, QueuePool
 from contextlib import asynccontextmanager
+
+# Optional uvloop import - gracefully handle missing dependency
+try:
+    import uvloop
+    UVLOOP_AVAILABLE = True
+except ImportError:
+    uvloop = None
+    UVLOOP_AVAILABLE = False
 
 
 def create_engine(
@@ -31,7 +38,7 @@ def create_engine(
         Engine instance optimized for DuckDB
     """
     # Ensure uvloop is set as the event loop policy for optimal performance
-    if hasattr(uvloop, 'install'):
+    if UVLOOP_AVAILABLE and hasattr(uvloop, 'install'):
         uvloop.install()
     
     # DuckDB-specific optimizations
@@ -151,7 +158,7 @@ def ensure_uvloop() -> None:
     This should be called early in the application lifecycle.
     """
     try:
-        if hasattr(uvloop, 'install') and not isinstance(
+        if UVLOOP_AVAILABLE and hasattr(uvloop, 'install') and not isinstance(
             asyncio.get_event_loop_policy(), uvloop.EventLoopPolicy
         ):
             uvloop.install()
