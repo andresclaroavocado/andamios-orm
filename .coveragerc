@@ -1,0 +1,54 @@
+[run]
+# Coverage configuration for Andamios ORM
+source = src/andamios_orm
+branch = True
+parallel = True
+concurrency = thread,multiprocessing
+
+# Omit test files and generated files
+omit = 
+    tests/*
+    */tests/*
+    */__pycache__/*
+    */migrations/*
+    */alembic/*
+    setup.py
+    conftest.py
+    */conftest.py
+
+[report]
+# Reporting configuration
+precision = 2
+show_missing = True
+skip_covered = False
+skip_empty = False
+
+# Fail if coverage is below threshold
+fail_under = 100
+
+# Report format
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+# HTML report configuration
+directory = htmlcov
+title = Andamios ORM Coverage Report
+
+[xml]
+# XML report configuration for CI/CD
+output = coverage.xml
+
+[json]
+# JSON report configuration
+output = coverage.json
+pretty_print = true
