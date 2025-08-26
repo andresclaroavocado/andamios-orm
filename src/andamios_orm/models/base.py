@@ -45,11 +45,10 @@ class Model(Base):
             if 'id' not in kwargs:
                 try:
                     # Simple ID generation for DuckDB compatibility
-                    result = await asyncio.to_thread(
-                        session._session.execute,
+                    result = await session.execute(
                         text(f"SELECT COALESCE(MAX(id), 0) + 1 FROM {cls.__tablename__}")
                     )
-                    next_id = await asyncio.to_thread(result.scalar)
+                    next_id = result.scalar()
                     kwargs['id'] = next_id
                     logger.debug(f"Generated ID {next_id} for {cls.__name__}")
                 except SQLAlchemyError as e:

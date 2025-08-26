@@ -14,7 +14,7 @@ import threading
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Union
 from functools import wraps
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 import asyncio
 from datetime import datetime
 
@@ -74,6 +74,22 @@ class PerformanceLoggerAdapter(logging.LoggerAdapter):
         finally:
             elapsed = time.perf_counter() - start_time
             self.info(f"Operation completed: {operation}", extra={
+                "operation": operation,
+                "elapsed_time": elapsed,
+                "performance": True
+            })
+    
+    @asynccontextmanager
+    async def async_timer(self, operation: str):
+        """Async context manager for timing operations."""
+        start_time = time.perf_counter()
+        self.debug(f"Starting async operation: {operation}")
+        
+        try:
+            yield
+        finally:
+            elapsed = time.perf_counter() - start_time
+            self.info(f"Async operation completed: {operation}", extra={
                 "operation": operation,
                 "elapsed_time": elapsed,
                 "performance": True
@@ -242,7 +258,7 @@ def log_async_performance(operation_name: str):
         async def wrapper(*args, **kwargs):
             logger = get_logger("performance", performance=True)
             
-            async with logger.timer(f"{operation_name}"):
+            async with logger.async_timer(f"{operation_name}"):
                 result = await func(*args, **kwargs)
             
             return result

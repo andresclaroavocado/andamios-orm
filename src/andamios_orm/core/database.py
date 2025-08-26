@@ -49,16 +49,77 @@ class DatabaseInitializer:
             raise DatabaseOperationError(f"Failed to initialize database: {e}")
     
     async def create_all_tables(self) -> None:
-        """Create all tables defined in the Base metadata."""
+        """Create all tables defined in the metadata."""
         logger.info("Creating database tables...")
         
         def _create_tables():
-            self.metadata.create_all(self.engine)
+            # Check if we're using Base metadata (our default) or custom metadata
+            if self.metadata is Base.metadata:
+                # Use DuckDB-compatible DDL statements for Base metadata
+                ddl_statements = [
+                    """
+                    CREATE TABLE IF NOT EXISTS projects (
+                        id INTEGER PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        project_idea TEXT NOT NULL,
+                        architecture JSON,
+                        status VARCHAR(50) DEFAULT 'draft',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP
+                    )
+                    """,
+                    """
+                    CREATE TABLE IF NOT EXISTS conversations (
+                        id INTEGER PRIMARY KEY,
+                        project_id INTEGER,
+                        phase VARCHAR(100) DEFAULT 'project_idea',
+                        messages JSON DEFAULT '[]',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP
+                    )
+                    """,
+                    """
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id INTEGER PRIMARY KEY,
+                        project_id INTEGER,
+                        name VARCHAR(255) NOT NULL,
+                        content TEXT,
+                        doc_type VARCHAR(100),
+                        file_path VARCHAR(500),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP
+                    )
+                    """,
+                    """
+                    CREATE TABLE IF NOT EXISTS repositories (
+                        id INTEGER PRIMARY KEY,
+                        project_id INTEGER,
+                        name VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        repo_type VARCHAR(100),
+                        github_url VARCHAR(500),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP
+                    )
+                    """
+                ]
+                
+                with self.engine.connect() as conn:
+                    for ddl in ddl_statements:
+                        conn.execute(text(ddl.strip()))
+                    conn.commit()
+            else:
+                # For custom metadata, ensure we're using DuckDB dialect
+                # Create tables using DuckDB connection
+                with self.engine.connect() as conn:
+                    # Use the connection to create all tables from metadata
+                    self.metadata.create_all(conn)
         
         try:
             await asyncio.to_thread(_create_tables)
             logger.info("All tables created successfully")
-        except SQLAlchemyError as e:
+        except Exception as e:
             logger.error(f"Failed to create tables: {e}")
             raise DatabaseOperationError(f"Failed to create tables: {e}")
     
@@ -67,17 +128,31 @@ class DatabaseInitializer:
         logger.warning("Dropping all database tables...")
         
         def _drop_tables():
-            self.metadata.drop_all(self.engine)
+            # Drop tables in reverse order to handle dependencies
+            table_names = ["repositories", "documents", "conversations", "projects"]
+            
+            with self.engine.connect() as conn:
+                for table_name in table_names:
+                    try:
+                        conn.execute(text(f"DROP TABLE IF EXISTS {table_name}"))
+                    except SQLAlchemyError:
+                        # Ignore errors for tables that don't exist
+                        pass
+                conn.commit()
         
         try:
             await asyncio.to_thread(_drop_tables)
             logger.info("All tables dropped successfully")
-        except SQLAlchemyError as e:
+        except Exception as e:
             logger.error(f"Failed to drop tables: {e}")
             raise DatabaseOperationError(f"Failed to drop tables: {e}")
     
     async def table_exists(self, table_name: str) -> bool:
         """Check if a table exists in the database."""
+        # Handle invalid table names
+        if not table_name or table_name is None:
+            return False
+            
         logger.debug(f"Checking if table '{table_name}' exists")
         
         def _table_exists():
@@ -88,9 +163,9 @@ class DatabaseInitializer:
             exists = await asyncio.to_thread(_table_exists)
             logger.debug(f"Table '{table_name}' {'exists' if exists else 'does not exist'}")
             return exists
-        except SQLAlchemyError as e:
+        except (SQLAlchemyError, TypeError) as e:
             logger.error(f"Failed to check table existence: {e}")
-            raise DatabaseOperationError(f"Failed to check table existence: {e}")
+            return False
     
     async def get_table_names(self) -> List[str]:
         """Get list of all table names in the database."""
@@ -136,16 +211,31 @@ class DatabaseInitializer:
             
             logger.debug(f"Retrieved schema for table '{table_name}'")
             return schema
-        except SQLAlchemyError as e:
+        except DatabaseOperationError:
+            # Re-raise DatabaseOperationError as-is
+            raise
+        except Exception as e:
             logger.error(f"Failed to get table schema: {e}")
             raise DatabaseOperationError(f"Failed to get table schema: {e}")
     
-    async def verify_schema(self) -> bool:
+    async def recreate_all_tables(self) -> None:
+        """Drop and recreate all tables."""
+        logger.info("Recreating all database tables...")
+        try:
+            await self.drop_all_tables()
+            await self.create_all_tables()
+            logger.info("All tables recreated successfully")
+        except Exception as e:
+            logger.error(f"Failed to recreate tables: {e}")
+            raise DatabaseOperationError(f"Failed to recreate tables: {e}")
+
+    async def verify_schema(self, expected_tables: Optional[List[str]] = None) -> bool:
         """Verify that all expected tables exist with correct schema."""
         logger.info("Verifying database schema...")
         
         try:
-            expected_tables = list(self.metadata.tables.keys())
+            if expected_tables is None:
+                expected_tables = list(self.metadata.tables.keys())
             existing_tables = await self.get_table_names()
             
             missing_tables = set(expected_tables) - set(existing_tables)
@@ -206,6 +296,55 @@ class DatabaseInitializer:
         except Exception as e:
             logger.error(f"Failed to seed database: {e}")
             raise DatabaseOperationError(f"Failed to seed database: {e}")
+    
+    async def get_database_size(self) -> int:
+        """Get the size of the database in bytes. Not implemented for DuckDB."""
+        logger.warning("get_database_size is not implemented for DuckDB")
+        raise NotImplementedError("Database size calculation not supported for DuckDB")
+    
+    async def backup_database(self, backup_path: str) -> None:
+        """Backup the database. Not implemented for DuckDB."""
+        logger.warning("backup_database is not implemented for DuckDB")
+        raise NotImplementedError("Database backup not supported for DuckDB")
+    
+    async def restore_database(self, backup_path: str) -> None:
+        """Restore the database from backup. Not implemented for DuckDB."""
+        logger.warning("restore_database is not implemented for DuckDB")
+        raise NotImplementedError("Database restore not supported for DuckDB")
+    
+    async def get_connection_info(self) -> Dict[str, Any]:
+        """Get database connection information."""
+        logger.debug("Retrieving database connection info")
+        
+        try:
+            return {
+                'engine': str(self.engine),
+                'dialect': self.engine.dialect.name if hasattr(self.engine, 'dialect') else 'unknown',
+                'driver': getattr(self.engine.dialect, 'driver', 'unknown'),
+                'url': str(self.engine.url) if hasattr(self.engine, 'url') else 'unknown'
+            }
+        except Exception as e:
+            logger.error(f"Failed to get connection info: {e}")
+            raise DatabaseOperationError(f"Failed to get connection info: {e}")
+    
+    async def validate_database(self) -> bool:
+        """Validate database connection and basic functionality."""
+        logger.debug("Validating database connection")
+        
+        try:
+            # Test basic connection
+            def _test_connection():
+                with self.engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                    return True
+            
+            await asyncio.to_thread(_test_connection)
+            logger.debug("Database validation passed")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Database validation failed: {e}")
+            return False
 
 
 # Global database initializer instance
@@ -220,7 +359,7 @@ def get_database_initializer() -> DatabaseInitializer:
     return _db_initializer
 
 
-def set_database_initializer(initializer: DatabaseInitializer) -> None:
+def set_database_initializer(initializer: Optional[DatabaseInitializer]) -> None:
     """Set the global database initializer instance."""
     global _db_initializer
     _db_initializer = initializer

@@ -134,7 +134,12 @@ class AsyncSessionWrapper:
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
-        asyncio.create_task(self.close())
+        # For sync context manager, we close the underlying session directly
+        try:
+            self._session.close()
+        except Exception:
+            # Ignore errors on cleanup
+            pass
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -255,7 +260,8 @@ async def session_scope() -> AsyncContextManager[AsyncSessionWrapper]:
             # do work
             await session.commit()
     """
-    session = await get_session()
+    manager = get_session_manager()
+    session = await manager.get_session()
     try:
         yield session
     except Exception:
@@ -274,15 +280,9 @@ async def transaction_scope() -> AsyncContextManager[AsyncSessionWrapper]:
         async with transaction_scope() as session:
             # do work - auto commits on success, rollbacks on exception
     """
-    session = await get_session()
-    try:
+    manager = get_session_manager()
+    async with manager.transaction() as session:
         yield session
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise
-    finally:
-        await session.close()
 
 
 async def with_session(func: Callable[[AsyncSessionWrapper], Any]) -> Any:
@@ -322,6 +322,11 @@ class SessionManager:
             self.engine,
             expire_on_commit=False
         )
+    
+    async def get_session(self) -> AsyncSessionWrapper:
+        """Get a session from the session maker."""
+        session = AsyncSessionWrapper(self.sessionmaker())
+        return session
     
     @asynccontextmanager
     async def session(self) -> AsyncContextManager[AsyncSessionWrapper]:

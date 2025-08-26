@@ -88,16 +88,32 @@ class NotFoundError(AndamiosORMException):
         message: str,
         model_class: Optional[str] = None,
         identifier: Optional[Any] = None,
+        resource_type: Optional[str] = None,
+        resource_id: Optional[Any] = None,
         **kwargs: Any
     ):
         super().__init__(message, **kwargs)
-        self.model_class = model_class
-        self.identifier = identifier
+        self.model_class = model_class or resource_type
+        self.identifier = identifier or resource_id
+        # Support both naming conventions
+        self.resource_type = resource_type or model_class
+        self.resource_id = resource_id or identifier
         
-        if model_class:
-            self.add_context("model_class", model_class)
-        if identifier is not None:
-            self.add_context("identifier", identifier)
+        if self.model_class:
+            self.add_context("model_class", self.model_class)
+        if self.identifier is not None:
+            self.add_context("identifier", self.identifier)
+    
+    def __str__(self) -> str:
+        """Return string representation including resource details."""
+        result = super().__str__()
+        if self.resource_type and self.resource_id is not None:
+            result += f" (resource: {self.resource_type}#{self.resource_id})"
+        elif self.resource_type:
+            result += f" (resource: {self.resource_type})"
+        elif self.resource_id is not None:
+            result += f" (id: {self.resource_id})"
+        return result
 
 
 class DatabaseConnectionError(AndamiosORMException):
@@ -126,12 +142,23 @@ class DatabaseConnectionError(AndamiosORMException):
         if retry_count > 0:
             self.add_context("retry_count", retry_count)
     
+    def __str__(self) -> str:
+        """Return string representation including connection string."""
+        result = super().__str__()
+        if self.connection_string:
+            safe_conn = self._sanitize_connection_string(self.connection_string)
+            result += f" (connection: {safe_conn})"
+        return result
+    
     @staticmethod
     def _sanitize_connection_string(conn_str: str) -> str:
         """Remove sensitive information from connection string."""
-        # Simple sanitization - replace password patterns
         import re
-        return re.sub(r'(password|pwd)=[^;]+', r'\1=***', conn_str, flags=re.IGNORECASE)
+        # Handle URL format (e.g. postgresql://user:password@host)
+        sanitized = re.sub(r'://([^:]+):([^@]+)@', r'://\1:***@', conn_str)
+        # Handle key=value format (e.g. password=value)
+        sanitized = re.sub(r'(password|pwd)=[^;]+', r'\1=***', sanitized, flags=re.IGNORECASE)
+        return sanitized
 
 
 class DatabaseOperationError(AndamiosORMException):
@@ -257,6 +284,13 @@ class QueryError(AndamiosORMException):
             self.add_context("query", query)
         if parameters:
             self.add_context("parameters", parameters)
+    
+    def __str__(self) -> str:
+        """Return string representation including query details."""
+        result = super().__str__()
+        if self.query:
+            result += f" (query: {self.query})"
+        return result
 
 
 # Convenience functions for exception handling
@@ -334,3 +368,27 @@ def handle_not_found_error(
         model_class=model_class,
         identifier=identifier
     )
+
+
+def sanitize_connection_string(conn_str: str) -> str:
+    """
+    Remove sensitive information from connection string.
+    
+    Args:
+        conn_str: The connection string to sanitize
+    
+    Returns:
+        Sanitized connection string with passwords masked
+    """
+    if not conn_str:
+        return conn_str
+    
+    import re
+    
+    # Handle URL format (e.g. postgresql://user:password@host)
+    sanitized = re.sub(r'://([^:]+):([^@]+)@', r'://\1:***@', conn_str)
+    
+    # Handle key=value format (e.g. password=value)
+    sanitized = re.sub(r'(password|pwd)=[^;&]+', r'\1=***', sanitized, flags=re.IGNORECASE)
+    
+    return sanitized

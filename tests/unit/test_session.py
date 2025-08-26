@@ -335,28 +335,34 @@ class TestSessionScope:
     """Test session_scope context manager."""
     
     @pytest.mark.asyncio
-    @patch('src.andamios_orm.core.session.get_session')
-    async def test_session_scope_success(self, mock_get_session):
+    @patch('src.andamios_orm.core.session.get_session_manager')
+    async def test_session_scope_success(self, mock_get_session_manager):
         """Test successful session_scope usage."""
         mock_session = AsyncMock(spec=AsyncSessionWrapper)
-        mock_get_session.return_value = mock_session
+        mock_manager = AsyncMock()
+        mock_manager.get_session.return_value = mock_session
+        mock_get_session_manager.return_value = mock_manager
         
         async with session_scope() as session:
             assert session == mock_session
         
+        mock_manager.get_session.assert_called_once()
         mock_session.close.assert_called_once()
     
     @pytest.mark.asyncio
-    @patch('src.andamios_orm.core.session.get_session')
-    async def test_session_scope_exception(self, mock_get_session):
+    @patch('src.andamios_orm.core.session.get_session_manager')
+    async def test_session_scope_exception(self, mock_get_session_manager):
         """Test session_scope with exception."""
         mock_session = AsyncMock(spec=AsyncSessionWrapper)
-        mock_get_session.return_value = mock_session
+        mock_manager = AsyncMock()
+        mock_manager.get_session.return_value = mock_session
+        mock_get_session_manager.return_value = mock_manager
         
         with pytest.raises(ValueError):
             async with session_scope() as session:
                 raise ValueError("Test exception")
         
+        mock_manager.get_session.assert_called_once()
         mock_session.rollback.assert_called_once()
         mock_session.close.assert_called_once()
 
@@ -365,31 +371,39 @@ class TestTransactionScope:
     """Test transaction_scope context manager."""
     
     @pytest.mark.asyncio
-    @patch('src.andamios_orm.core.session.get_session')
-    async def test_transaction_scope_success(self, mock_get_session):
+    @patch('src.andamios_orm.core.session.get_session_manager')
+    async def test_transaction_scope_success(self, mock_get_session_manager):
         """Test successful transaction_scope usage."""
         mock_session = AsyncMock(spec=AsyncSessionWrapper)
-        mock_get_session.return_value = mock_session
+        mock_manager = Mock()
+        mock_transaction_context = AsyncMock()
+        mock_transaction_context.__aenter__.return_value = mock_session
+        mock_transaction_context.__aexit__.return_value = None
+        mock_manager.transaction.return_value = mock_transaction_context
+        mock_get_session_manager.return_value = mock_manager
         
         async with transaction_scope() as session:
             assert session == mock_session
         
-        mock_session.commit.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_manager.transaction.assert_called_once()
     
     @pytest.mark.asyncio
-    @patch('src.andamios_orm.core.session.get_session')
-    async def test_transaction_scope_exception(self, mock_get_session):
+    @patch('src.andamios_orm.core.session.get_session_manager')
+    async def test_transaction_scope_exception(self, mock_get_session_manager):
         """Test transaction_scope with exception."""
         mock_session = AsyncMock(spec=AsyncSessionWrapper)
-        mock_get_session.return_value = mock_session
+        mock_manager = Mock()
+        mock_transaction_context = AsyncMock()
+        mock_transaction_context.__aenter__.return_value = mock_session
+        mock_transaction_context.__aexit__.return_value = None
+        mock_manager.transaction.return_value = mock_transaction_context
+        mock_get_session_manager.return_value = mock_manager
         
         with pytest.raises(ValueError):
             async with transaction_scope() as session:
                 raise ValueError("Test exception")
         
-        mock_session.rollback.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_manager.transaction.assert_called_once()
 
 
 class TestSessionHelpers:
@@ -514,7 +528,11 @@ class TestSessionManager:
                 
                 result = await self.session_manager.execute_raw_sql("SELECT 1", {"param": "value"})
                 
-                mock_execute.assert_called_once_with(text("SELECT 1"), {"param": "value"})
+                # Check that execute was called once with the right SQL and parameters
+                mock_execute.assert_called_once()
+                call_args = mock_execute.call_args
+                assert str(call_args[0][0]) == "SELECT 1"  # Check SQL text
+                assert call_args[0][1] == {"param": "value"}  # Check parameters
                 assert result == mock_result
     
     @pytest.mark.asyncio
@@ -607,7 +625,10 @@ class TestCreateTablesDuckDBCompatible:
         
         mock_engine = Mock(spec=Engine)
         mock_conn = Mock()
-        mock_engine.connect.return_value.__enter__.return_value = mock_conn
+        mock_context = Mock()
+        mock_context.__enter__ = Mock(return_value=mock_conn)
+        mock_context.__exit__ = Mock(return_value=None)
+        mock_engine.connect.return_value = mock_context
         mock_to_thread.return_value = None
         
         await _create_tables_duckdb_compatible(mock_engine)
@@ -622,3 +643,116 @@ class TestCreateTablesDuckDBCompatible:
         # Should have executed multiple DDL statements
         assert mock_conn.execute.call_count == 4  # projects, conversations, documents, repositories
         mock_conn.commit.assert_called_once()
+
+
+class TestSessionCoverageEnhancements:
+    """Additional tests to ensure comprehensive coverage of session.py"""
+    
+    @pytest.mark.asyncio
+    async def test_async_session_wrapper_bulk_operations_error_handling(self, memory_engine):
+        """Test AsyncSessionWrapper bulk operations error handling"""
+        from src.andamios_orm.core.session import init_db, AsyncSessionWrapper
+        from src.andamios_orm.models.project import Project
+        from unittest.mock import patch, AsyncMock
+        from sqlalchemy.exc import SQLAlchemyError
+        
+        init_db(memory_engine)
+        
+        from src.andamios_orm.core.session import _global_sessionmaker
+        session = _global_sessionmaker()
+        wrapper = AsyncSessionWrapper(session)
+        
+        # Test bulk_insert_mappings error handling
+        with patch.object(session, 'bulk_insert_mappings', side_effect=SQLAlchemyError("Bulk insert failed", None, None)):
+            with pytest.raises(DatabaseConnectionError, match="Failed to bulk insert"):
+                await wrapper.bulk_insert_mappings(Project, [{"id": 1, "name": "test"}])
+        
+        # Test bulk_update_mappings error handling
+        with patch.object(session, 'bulk_update_mappings', side_effect=SQLAlchemyError("Bulk update failed", None, None)):
+            with pytest.raises(DatabaseConnectionError, match="Failed to bulk update"):
+                await wrapper.bulk_update_mappings(Project, [{"id": 1, "name": "updated"}])
+    
+    @pytest.mark.asyncio
+    async def test_async_session_wrapper_close_error_handling(self, memory_engine):
+        """Test AsyncSessionWrapper close error handling"""
+        from src.andamios_orm.core.session import init_db, AsyncSessionWrapper
+        from unittest.mock import patch
+        from sqlalchemy.exc import SQLAlchemyError
+        
+        init_db(memory_engine)
+        
+        from src.andamios_orm.core.session import _global_sessionmaker
+        session = _global_sessionmaker()
+        wrapper = AsyncSessionWrapper(session)
+        
+        # Test close error handling
+        with patch.object(session, 'close', side_effect=SQLAlchemyError("Close failed", None, None)):
+            with pytest.raises(DatabaseConnectionError, match="Failed to close"):
+                await wrapper.close()
+    
+    @pytest.mark.asyncio
+    async def test_session_scope_error_handling(self, memory_engine):
+        """Test session_scope error handling during session creation"""
+        from src.andamios_orm.core.session import session_scope, init_db
+        from unittest.mock import patch
+        
+        init_db(memory_engine)
+        
+        # Mock get_session to raise exception
+        with patch('src.andamios_orm.core.session.get_session') as mock_get_session:
+            mock_get_session.side_effect = Exception("Session creation failed")
+            
+            try:
+                async with session_scope() as session:
+                    # Should not reach this point
+                    assert False, "Should have raised exception"
+            except Exception as e:
+                assert "Session creation failed" in str(e)
+    
+    @pytest.mark.asyncio
+    async def test_transaction_scope_rollback_on_exception(self, memory_engine):
+        """Test transaction_scope properly rolls back on exception"""
+        from src.andamios_orm.core.session import transaction_scope, init_db
+        from unittest.mock import AsyncMock, patch
+        
+        init_db(memory_engine)
+        
+        mock_session = AsyncMock()
+        
+        with patch('src.andamios_orm.core.session.get_session', return_value=mock_session):
+            try:
+                async with transaction_scope() as session:
+                    assert session is mock_session
+                    raise Exception("Test exception")
+            except Exception as e:
+                assert "Test exception" in str(e)
+        
+        # Verify rollback was called
+        mock_session.rollback.assert_called_once()
+    
+    def test_init_db_with_none_engine(self):
+        """Test init_db creates memory engine when None provided"""
+        from src.andamios_orm.core.session import init_db
+        
+        # Should create memory engine when None is passed
+        init_db(None)
+        
+        from src.andamios_orm.core.session import _global_engine, _global_sessionmaker
+        assert _global_engine is not None
+        assert _global_sessionmaker is not None
+    
+    @pytest.mark.asyncio
+    async def test_get_session_with_existing_global_state(self, memory_engine):
+        """Test get_session uses existing global sessionmaker"""
+        from src.andamios_orm.core.session import init_db, get_session
+        
+        # Initialize with specific engine
+        init_db(memory_engine)
+        
+        # Get session should use existing global state
+        session = await get_session()
+        assert session is not None
+        
+        # Get another session - should reuse sessionmaker
+        session2 = await get_session()
+        assert session2 is not None

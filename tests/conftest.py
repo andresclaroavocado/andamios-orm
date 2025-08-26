@@ -86,6 +86,15 @@ async def initialized_db(test_engine):
 
 
 @pytest.fixture
+async def memory_session(memory_engine):
+    """Create a memory session with automatic cleanup."""
+    init_db(memory_engine)
+    session = await get_session()
+    yield session
+    await session.close()
+
+
+@pytest.fixture
 def session_manager(test_engine):
     """Create a session manager for testing."""
     return SessionManager(test_engine)
